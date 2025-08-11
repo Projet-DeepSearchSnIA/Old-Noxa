@@ -1,4 +1,4 @@
-````markdown
+
 # NOXA
 
 [![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python&logoColor=white)](https://www.python.org/)
@@ -113,6 +113,6 @@ Pour toute question ou bug, ouvrir une issue sur GitHub ou contacter l’équipe
 
 *Développé avec ❤️ par l’équipe NOXA*
 
-```
+
 
 
