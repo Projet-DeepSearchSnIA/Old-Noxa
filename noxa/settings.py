@@ -123,7 +123,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    BASE_DIR / 'static',
     
 ]
 
@@ -132,12 +132,12 @@ AUTH_USER_MODEL = 'authentification.User'
 
 # Login URL
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/Accueil/'  # Redirect to home after login
+LOGIN_REDIRECT_URL = '/home/'  # Redirect to home after login
 LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login after logout
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -22,7 +22,7 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('authentification.urls', namespace='authentification')),
-    path('Accueil/', views.home_view, name='home'),
+    path('home/', views.home_view, name='home'),
 ]
 
 if settings.DEBUG:

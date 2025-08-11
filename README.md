@@ -45,11 +45,11 @@ pip install -r requirements.txt
 1. Cloner le dépôt :
 
 ```bash
-git clone https://github.com/Projet-DeepSearchSnIA/Noxa.git
+git clone [https://github.com/Projet-DeepSearchSnIA/Noxa.git](https://github.com/Projet-DeepSearchSnIA/Noxa.git)
 cd noxa
 ```
 
-2. Se positionner sur la branche souhaitée (voir ci-dessous)
+2. Se positionner sur la branche souhaitée 
 
 3. Lancer les migrations :
 
