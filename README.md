@@ -45,7 +45,7 @@ pip install -r requirements.txt
 1. Cloner le dépôt :
 
 ```bash
-git clone https://github.com/ton-utilisateur/noxa.git
+git clone [https://github.com/ton-utilisateur/noxa.git](https://github.com/Projet-DeepSearchSnIA/Noxa.git)
 cd noxa
 ```
 
