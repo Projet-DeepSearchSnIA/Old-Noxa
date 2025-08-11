@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Welcome message -->
+<div class="container welcome-msg">
+    <h1>Bienvenue, {{ user.username }} !</h1>
+    <p>Accédez rapidement à vos documents et déposez de nouveaux travaux d’études.</p>
+</div>
+
+<!-- Main content cards -->
+<div class="container">
+    <div class="row g-4 justify-content-center">
+
+        <div class="col-md-4 col-sm-6">
+            <div onclick="location.href='{% url 'authentification:login' %}'" class="card card-custom text-center p-4">
+                <div><i class="fas fa-upload card-icon"></i></div>
+                <h5>Déposer un document</h5>
+                <p class="text-muted">Ajoutez vos mémoires, thèses ou rapports facilement.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+            <div onclick="location.href='{% url 'authentification:login' %}'" class="card card-custom text-center p-4">
+                <div><i class="fas fa-folder-open card-icon"></i></div>
+                <h5>Mes documents</h5>
+                <p class="text-muted">Consultez et gérez tous vos documents déposés.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6">
+            <div onclick="location.href='{% url 'authentification:login' %}'" class="card card-custom text-center p-4">
+                <div><i class="fas fa-user card-icon"></i></div>
+                <h5>Mon profil</h5>
+                <p class="text-muted">Voir et modifier les informations de votre compte.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock content %}
+
+

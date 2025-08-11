@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Accueil - NOXA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #0d6efd;
+        }
+        .navbar-brand:hover {
+            color: #0a58ca;
+        }
+        .welcome-msg {
+            margin-top: 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        .welcome-msg h1 {
+            font-weight: 700;
+            color: #212529;
+        }
+        .welcome-msg p {
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+        .card-custom {
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .card-custom:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        .card-icon {
+            font-size: 3.5rem;
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 4rem;
+            color: #6c757d;
+        }
+    </style>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Font Awesome Icons -->
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">NOXA</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
+                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'authentification:login' %}">Déposer un document</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'authentification:login' %}">Mes documents</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Profil
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'authentification:profile' %}">Voir Profil</a></li>
+                        <li><a class="dropdown-item" href="{% url 'authentification:login' %}">Modifier Profil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'authentification:logout' %}">Déconnexion</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+ <!-- Affichage des messages d'erreur -->
+
+    {% if messages %}
+        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1050; width: 300px; background: rgba(255, 50, 100, 0.9);">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow rounded mb-2" role="alert" style="opacity: 0.95; color: black;">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
