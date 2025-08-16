@@ -1,0 +1,398 @@
+/* profile.css */
+
+.profile__container {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 25px;
+    width: 100%;
+}
+
+.profile__container--card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.profile__container--favs__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.profile__container--favs__item--title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-align: left;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.profile__container--favs__item--collections {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.profile__container--favs__item--collections__collection {
+    width: 100%;
+    background: var(--brand-color);
+    border-left: 4px solid var(--dark-grayish-blue);
+    color: var(--white);
+    padding: 8px 20px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile__container--favs__item--collections__collection a {
+    text-decoration: none;
+    color: var(--white);
+}
+
+.profile__container--favs__item--collections__collection .delete {
+    display: none;
+    cursor: pointer;
+}
+
+.profile__container--favs__item--collections__collection:hover .delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile__container--favs__item--collections__empty {
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    /* text-transform: uppercase; */
+    color: var(--dark-grayish-blue);
+}
+
+.profile__container--favs__item--collections__newcol {
+    font-size: 12px;
+    margin: 15px;
+    /* text-transform: uppercase; */
+    letter-spacing: 2px;
+    text-decoration: none;
+    color: var(--white);
+    background: var(--brand-color);
+    padding: 8px 15px;
+    border-radius: 3px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.profile__container--main__info {
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile__container--main__info--profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+}
+
+.profile__container--main__info--profile .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid;
+    overflow: hidden;
+}
+
+.profile__container--main__info--profile .avatar img {
+    width: 90px;
+}
+
+.profile__container--main__info--profile p {
+    font-size: 20px;
+    color: var(--brand-color);
+}
+
+.profile__container--main__date {
+    margin-bottom: 8px;
+}
+
+.profile__container--main__info--socials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* width: 100%; */
+    width: 100%;
+}
+
+.profile__container--main__info--socials__item {
+    display: flex;
+    /* flex-direction: column; */
+    align-items: center;
+    justify-content: center;
+    /* width: 33%; */
+    width: 33%;
+}
+
+.profile__container--main__info--socials__item .svg {
+    display: flex;
+    /* flex-direction: column; */
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+}
+
+.profile__container--main__info--socials__item div,
+.profile__container--main__info--socials__item a {
+    text-decoration: none;
+}
+
+.profile__container--main__info--welcome {
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.profile__container--main__info--edit {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-decoration: none;
+    color: var(--white);
+    background: var(--brand-color);
+    padding: 8px 15px;
+    margin: 15px 0;
+    border-radius: 3px;
+}
+
+.profile__container--main__info--bio {
+    font-size: 16px;
+    color: var(--dark-grayish-blue);
+    text-align: justify;
+}
+
+.profile__container--main__pubs {
+    width: 100%;
+}
+
+.profile__container--main__pubs--title {
+    font-size: 1.3rem;
+    text-transform: uppercase;
+}
+
+.profile__container--main__pubs--pubs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile__container--main__pubs--pubs .recent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+    margin-bottom: 25px;
+    border-bottom: 2px solid;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__specs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__specs .recent__specs--theme {
+    font-size: 1.5rem;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__specs .recent__specs--theme:hover {
+    text-decoration: underline;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__specs .recent__specs--pdf {
+    font-size: 14px;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__specs .recent__specs--pdf:hover {
+    text-decoration: underline;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__authors {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__authors .recent__authors--author {
+    margin-right: 10px;
+    text-decoration: none;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__authors .recent__authors--author:hover {
+    text-decoration: underline;
+}
+
+.profile__container--main__pubs--pubs .recent .recent__description {
+    padding: 15px 30px;
+    text-align: justify;
+    color: var(--dark-grayish-blue);
+}
+
+.profile__container--main__pubs--pubs__empty {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    /* text-transform: uppercase; */
+    color: var(--dark-grayish-blue);
+}
+
+.profile__container--main__pubs--head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile__container--main__pubs--pubs__publish {
+    margin: 15px;
+    /* text-transform: uppercase; */
+    /* letter-spacing: 2px; */
+    text-decoration: none;
+    color: var(--white);
+    background: var(--brand-color);
+    padding: 8px 15px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile__container--main__pubs--pubs__publish .svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+}
+
+.modal_cont {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal_cont .modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 30%;
+    background: var(--white);
+    height: 120px;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.modal_cont.show {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+}
+
+.modal__header--title {
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.modal__form {
+    width: 100%;
+    position: relative;
+}
+
+.modal__form .form__group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.modal__form .form__group label {
+    text-align: left;
+    width: 100%;
+    font-size: 13px;
+}
+
+.modal__form .form__group input {
+    width: 100%;
+    font-size: 14px;
+}
+
+.modal__btns {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+}
+
+.modal__btns .create {
+    background: var(--brand-color);
+    color: var(--white);
+    border: none;
+    outline: none;
+    padding: 5px 8px;
+    border-radius: 888px;
+    width: 47%;
+}
+
+.modal__btns .cancel {
+    background: grey;
+    color: var(--white);
+    border: none;
+    outline: none;
+    padding: 5px 8px;
+    border-radius: 888px;
+    width: 47%;
+}
+
+
+
+

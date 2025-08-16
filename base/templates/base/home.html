@@ -1,0 +1,176 @@
+
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - Find Academic Papers From Schools Around The World
+{% endblock title %}
+
+{% block content %}
+
+<div class="home__container">
+    <div class="home__container--first home__container--card">
+        <div class="home__container--first__item topics">
+            <p class="home__container--first__item--title">Trending topics</p>
+            <div class="home__container--first__item--main">
+                {% for topic in topics %}
+                    <div class="topic">
+                        <div class="topic__specs" title="{{ topic.name }}">
+                            <p>{{ topic.name }}</p>
+                            <div>{{ topic.publication_set.count }} pubs</div>
+                        </div>
+                        <button class="topic__follow" data-topic-id="{{ topic.id }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <title>Follow</title>
+                                <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                {% endfor%}
+            </div>
+        </div>
+        
+        {% if request.user.is_authenticated %}
+            <div class="home__container--first__item favs">
+                <p class="home__container--first__item--title">Favorites</p>
+                <!-- Add favorites here (tags and topics)-->
+                <div class="home__container--first__item--content">
+                    <div class="home__container--first__item--content__item topics">
+                        <p class="home__container--first__item--content__item--title">Topics</p>
+                        <div class="home__container--first__item--content__item--main">
+                            {% for topic in request.user.favorite_topics.all %}
+                            <div class="favorite-topic-box">
+                                <span class="topic-name">{{ topic.name }}</span>
+                                <button class="favorite-topic-remove" data-topic-id="{{ topic.id }}" type="button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                                        <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% empty %}
+                            <p class="empty">No favorite topics yet. Follow some topics to see them here!</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="home__container--first__item--content__item tags">
+                        <p class="home__container--first__item--content__item--title">Tags</p>
+                        <div class="home__container--first__item--content__item--main">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="home__container--first__item collections">
+                <p class="home__container--first__item--title">Collections</p>
+                <!-- Add collections here -->
+                <div class="profile__container--favs__item--collections">
+
+                    {% if collections %}
+                        {% for collection in collections %}
+                            <div class="profile__container--favs__item--collections__collection">
+                                <a href="{% url 'base:collection' user.id collection.id %}">
+                                    <p style="font-size: 14px; font-weight: 500;">{{ collection.name }} ({{ collection.pub_count }})</p>
+                                    <small>{{ collection.created|timesince }} ago</small>
+                                </a>
+                                <div class="delete" for="{{ collection.id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                        <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="profile__container--favs__item--collections__empty">No collection here</p>
+                    {% endif %}
+
+                    {% if request.user.id == user.id %}
+                        <button type="button" class="profile__container--favs__item--collections__newcol">
+                            New Collection
+                        </button>
+                    {% endif %}
+
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="home__container--second home__container--card">
+        {% if request.user.is_authenticated %}
+            <div class="home__container--second__item for_you">
+                <p class="home__container--second__item--title">For you</p>
+            </div>
+            <hr>
+        {% endif %}
+        <div class="home__container--second__item recents">
+            <p class="home__container--second__item--title">Recent Publications</p>
+            <div  class="home__container--second__item--main">
+                {% for pub in pubs %}
+                    
+                <div class="recent">
+                    <div class="recent__specs">
+                        <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
+                        <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}">[pdf]</a>
+                    </div>
+                    <div class="recent__authors">
+                        {% for author in pub.authors.all %}
+                            <a class="recent__authors--author" href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a>
+                        {% endfor %}
+                    </div>
+                    <p class="recent__description">{{ pub.description }}</p>
+                    <small>Published {{ pub.created|timesince }} ago</small>
+                </div>
+
+                {% endfor%}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<div class="modal_cont">
+    <div class="modal">
+        <div class="modal__header">
+            <p class="modal__header--title">Create Collection</p>
+            <button type="button" class="close_btn">
+                &times;
+            </button>
+        </div>
+        <form action="{% url 'base:create-collection' %}" class="modal__form" method="POST">
+            {% csrf_token %}
+            <div class="form__group">
+                <label for="name">Collection name</label>
+                <input type="text" name="name" id="name" class="form__group--input">
+            </div>
+
+            <div class="modal__btns">
+                <button type="submit" class="create">Create</button>
+                <button type="button" class="cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}
+
+
+{% block js %}
+
+<script>
+    $('.home__container--first__item--main .topic .topic__follow').on('click', function(e) {
+        const topicId = $(this).attr('data-topic-id');
+        
+        window.location.href = `/add-topic-to-fav/${topicId}/`;
+    });
+
+    $('.favorite-topic-box .favorite-topic-remove').on('click', function(e) {
+        const topicId = $(this).attr('data-topic-id');
+        
+        window.location.href = `/remove-topic-from-fav/${topicId}/`;
+    });
+</script>
+
+{% endblock js %}
+

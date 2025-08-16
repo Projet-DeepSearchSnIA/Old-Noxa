@@ -3,14 +3,18 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
 
+from base.models import Tag, Topic
+
 class User(AbstractUser):
-    photo = models.ImageField(upload_to='profils/', default='profils/default_profile.jpeg')
+    photo = models.ImageField(upload_to='profils/', default='profils/avatar.svg')
     school = models.CharField(max_length=100, default='ENSAE Dakar')
     bio = models.TextField(blank=True, null=True)
     linkedin = models.URLField(blank=True, null=True)
     github = models.URLField(blank=True, null=True)
     slug = models.SlugField(unique=True, blank=True, null=True)
     nb_documents = models.PositiveIntegerField(default=0)
+    favorite_tags = models.ManyToManyField(Tag, related_name="fav_tags", blank=True)
+    favorite_topics = models.ManyToManyField(Topic, related_name="fav_topics", blank=True)
 
     class Meta:
         verbose_name = 'User'

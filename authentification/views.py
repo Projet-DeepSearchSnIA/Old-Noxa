@@ -1,10 +1,11 @@
 from utils.decorateurs import log_action
+from django.contrib.auth import logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 
 
-def signUp_view(request):
+def register(request):
     User = get_user_model()
     
     if request.method == 'POST':
@@ -20,7 +21,7 @@ def signUp_view(request):
 
         if password != password2:
             messages.error(request, "Les mots de passe ne correspondent pas.")
-            return render(request, 'inscription.html')
+            return render(request, 'authentification/inscription.html')
 
         try:
             user = User.objects.create_user(
@@ -40,12 +41,12 @@ def signUp_view(request):
             return redirect('authentification:login')  
         except Exception as e:
             messages.error(request, f"Erreur lors de l'inscription : {str(e)}")
-            return render(request, 'inscription.html')
+            return render(request, 'authentification/inscription.html')
 
-    return render(request, 'inscription.html')
+    return render(request, 'authentification/inscription.html')
 
 @log_action('login')
-def login_view(request):
+def loginUser(request):
     """
     View for user login.
     """
@@ -60,27 +61,21 @@ def login_view(request):
                 login(request, user)
                 request.session['username'] = user.username  # Store username in session
                 messages.success(request, 'Connexion réussie.')
-                return redirect('home')  # Redirect to home page after login
+                return redirect('base:home')  # Redirect to home page after login
             else:
                 messages.error(request, 'Mot de passe incorrect.')
         except get_user_model().DoesNotExist:
             messages.error(request, 'Utilisateur non trouvé.')
 
 
-    return render(request, 'login.html')
+    return render(request, 'authentification/login.html')
 
 @log_action('logout')
-def logout_view(request):
+def logoutUser(request):
     """
     View for user logout.
     """
-    from django.contrib.auth import logout
     logout(request)
     request.session.flush()  # Clear the session
-    return redirect('authentification:login') 
+    return redirect('base:home') 
 
-def profile_view(request):
-    """
-    View for user profile.
-    """
-    return render(request, 'login.html') 

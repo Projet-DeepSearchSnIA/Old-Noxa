@@ -1,0 +1,207 @@
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    {{ pub.theme }}
+{% endblock title %}
+
+{% block content %}
+
+<style>
+    .tag-box {
+        display: inline-block;
+        padding: 2px 5px;
+        margin: 2px 0px;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.9em;
+        text-decoration: none;
+    }
+    .color1 { background-color: #71f3d9; }   /* turquoise */
+    .color2 { background-color: #76bdec; }   /* blue */
+    .color3 { background-color: #cd8be7; }   /* purple */
+    .color4 { background-color: #eba467; }   /* orange */
+    .color5 { background-color: #e46d60; }   /* red */
+    .color6 { background-color: #62e699; }   /* green */
+</style>
+
+<div class="publication__container">
+    <div class="publication__container--view publication__container--card">
+        <span class="publication__container--view__tags" style="display: inline;">
+            <a href="">{{ pub.topic }}</a>
+            <span style="color: #999; margin: 0 5px;">›</span>
+            {% for tag in pub.tags.all %}
+                <a href="" style="margin-left: 5px; color: #555; text-decoration: none;">
+                    #{{ tag.name }}
+                </a>
+                {% if not forloop.last %}
+                    <span style="color: #ccc;">•</span>
+                {% endif %}
+            {% endfor %}
+        </span>
+        <small class="publication__container--view__date">[Published on {{ pub.created }} by <a href="{% url 'base:user-profile' pub.user.id %}">{{ pub.user.username }}</a>]</small>
+        <p class="publication__container--view__theme">{{ pub.theme }}</p>
+        <div class="publication__container--view__authors">
+            {% for author in pub.authors.all %}
+                <a class="publication__container--view__authors__author"
+                href="{% url 'base:user-profile' author.id %}">
+                    @{{ author.username }}
+                </a>
+                {% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+        {% if pub.affiliations %}
+            <div class="publication__container--view__affiliations">
+                <p class="publication__container--view__affiliations--title">Affiliations</p>
+                <div class="publication__container--view__affiliations--content">
+                    {% for affiliation in pub.get_affiliations_list %}
+                        <p><small>{{ forloop.counter }}</small>. {{ affiliation }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="publication__container--view__abstract">
+            <p class="publication__container--view__abstract--title">Abstract</p>
+            <div class="publication__container--view__abstract--text">{{ pub.summary_html|safe }}</div>
+        </div>
+
+        <div class="publication__container--view__similar">
+            <p class="publication__container--view__similar--title">Similar papers</p>
+            <div class="publication__container--view__similar--content">
+                {% if similar_pubs %}
+                    {% for pub in similar_pubs %}
+                    
+                    <div class="recent">
+                        <div class="recent__specs">
+                            <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
+                            <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}">[pdf]</a>
+                        </div>
+                        <div class="recent__authors">
+                            {% for author in pub.authors.all %}
+                                <a class="recent__authors--author" href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a>
+                            {% endfor %}
+                        </div>
+                        <p class="recent__description">{{ pub.description }}</p>
+                        <small>Published {{ pub.created|timesince }} ago</small>
+                    </div>
+
+                    {% endfor %}
+                {% else %}
+                    <p class="publication__container--view__similar--content__empty">Nothing to show here</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="publication__container--control publication__container--card">
+
+        <div class="publication__container--control__card info">
+            <p class="publication__container--control__card--title">Paper info</p>
+            <div class="publication__container--control__card--content">
+                <p>Category: <a href="">{{ pub.topic}}</a></p>
+                <p>Tags: 
+                    {% for tag in pub.tags.all %}
+                        {% cycle 'color1' 'color2' 'color3' 'color4' 'color5' 'color6' as tag_colors silent %}
+                        <a href="" class="tag-box {{ tag_colors }}">{{ tag.name }}</a>
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+
+        <div class="publication__container--control__card access">
+            <p class="publication__container--control__card--title">Access paper</p>
+            <div class="publication__container--control__card--content">
+                <a href="{% url 'base:pdf' pub.id %}">View PDF</a>
+            </div>
+        </div>
+
+        <div class="publication__container--control__card actions">
+            <p class="publication__container--control__card--title">Actions</p>
+            <div class="publication__container--control__card--content">
+                {% if request.user.is_authenticated %}
+
+                    <button class="action__btn add_to_collection_btn" type="button">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <title>Add to Collection</title>
+                                <path d="M160-80v-560q0-33 23.5-56.5T240-720h320q33 0 56.5 23.5T640-640v560L400-200 160-80Zm80-121 160-86 160 86v-439H240v439Zm480-39v-560H280v-80h440q33 0 56.5 23.5T800-800v560h-80ZM240-640h320-320Z"/>
+                            </svg>
+                        </div>
+                        <p>Collection</p>
+                    </button>
+
+                    {% if request.user in pub.authors.all %}
+                        <button class="action__btn update" type="button">
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                    <title>Update</title>
+                                    <path d="M480-120q-75 0-140.5-28.5t-114-77q-48.5-48.5-77-114T120-480q0-75 28.5-140.5t77-114q48.5-48.5 114-77T480-840q82 0 155.5 35T760-706v-94h80v240H600v-80h110q-41-56-101-88t-129-32q-117 0-198.5 81.5T200-480q0 117 81.5 198.5T480-200q105 0 183.5-68T756-440h82q-15 137-117.5 228.5T480-120Zm112-192L440-464v-216h80v184l128 128-56 56Z"/>
+                                </svg>
+                            </div>
+                            <p>Update</p>
+                        </button>
+                    {% endif %}
+
+                    <button class="action__btn new_discussion" type="button">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <title>New discussion</title>
+                                <path d="M240-400h480v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM880-80 720-240H160q-33 0-56.5-23.5T80-320v-480q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v720ZM160-320h594l46 45v-525H160v480Zm0 0v-480 480Z"/>
+                            </svg>
+                        </div>
+                        <p>New discussion</p>
+                    </button>
+
+                    <button class="action__btn contact_authors" type="button">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                                <title>Contact authors</title>
+                                <path d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
+                            </svg>
+                        </div>
+                        <p>Contact authors</p>
+                    </button>
+
+                {% else %}
+                    <p>Login to get access to actions</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal_cont">
+    <div class="modal">
+        <div class="modal__header">
+            <p class="modal__header--title">Add to Collection</p>
+            <button type="button" class="close_btn">
+                &times;
+            </button>
+        </div>
+        <form action="{% url 'base:add-to-collection' pub.id %}" class="modal__form" method="POST" id="add-collection-form">
+            {% csrf_token %}
+            <div class="form__group">
+                <label for="user_collection">Collection name</label>
+                <input type="text" name="name" id="name" class="form__group--input" list="collection-list">
+                <datalist id="collection-list">
+                    <select id="user_collection">
+                        {% for collection in collections %}
+                        <option value="{{ collection.name }}">{{ collection.name }}</option>
+                        {% endfor %}
+                    </select>
+                </datalist>
+            </div>
+
+            <div class="modal__btns">
+                <button type="submit" class="create">Add</button>
+                <button type="button" class="cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock content %}
