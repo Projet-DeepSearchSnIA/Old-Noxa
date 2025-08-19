@@ -14,6 +14,10 @@
     justify-content: flex-start;
 }
 
+
+/* first card: favorites, collections,... */
+/************************************************************************************************/
+
 .profile__container--favs__item {
     display: flex;
     flex-direction: column;
@@ -23,7 +27,9 @@
     margin-bottom: 20px;
 }
 
-.profile__container--favs__item--title {
+.profile__container--favs__item--title,
+.profile__container--relations__item--title,
+.profile__container--activity__item--title {
     font-size: 1.2rem;
     font-weight: 500;
     text-align: left;
@@ -91,6 +97,9 @@
     cursor: pointer;
 }
 
+/* second card: main content */
+/************************************************************************************************/
+
 .profile__container--main__info {
     margin-bottom: 30px;
     display: flex;
@@ -107,7 +116,7 @@
     padding: 5px;
 }
 
-.profile__container--main__info--profile .avatar {
+.profile__container--main__info--profile .profile__container--main__info--profile__avatar {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -116,10 +125,13 @@
     border-radius: 50%;
     border: 2px solid;
     overflow: hidden;
+    width: 90px;
+    height: 90px;
 }
 
-.profile__container--main__info--profile .avatar img {
+.profile__container--main__info--profile .profile__container--main__info--profile__avatar img {
     width: 90px;
+    height: 90px;
 }
 
 .profile__container--main__info--profile p {
@@ -167,15 +179,31 @@
     margin-bottom: 15px;
 }
 
-.profile__container--main__info--edit {
-    text-transform: uppercase;
-    letter-spacing: 2px;
+.profile__container--main__info--edit,
+.profile__container--main__info--follow {
+    /* text-transform: uppercase; */
+    /* letter-spacing: 2px; */
     text-decoration: none;
     color: var(--white);
     background: var(--brand-color);
     padding: 8px 15px;
     margin: 15px 0;
     border-radius: 3px;
+}
+
+.profile__container--main__info--unfollow {
+    /* text-transform: uppercase; */
+    /* letter-spacing: 2px; */
+    text-decoration: none;
+    color: var(--black);
+    background: var(--light-grayish-blue);
+    padding: 8px 15px;
+    margin: 15px 0;
+    border-radius: 3px;
+}
+
+.profile__container--main__info--unfollow:hover {
+    background: var(--light-card-hover);
 }
 
 .profile__container--main__info--bio {
@@ -292,6 +320,176 @@
     justify-content: center;
     margin-right: 5px;
 }
+
+/* third card: activiy, relations, contributions */
+/************************************************************************************************/
+
+.notification {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    text-decoration: none;
+    color: var(--black);
+    position: relative;
+    padding: 5px 8px;
+    margin-bottom: 15px;
+}
+
+.notification-indicator {
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: #dc3545; /* Bootstrap red color */
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.notification.unread {
+    background-color: #f8f9fc; /* Slightly different background for unread */
+}
+
+.notification .text {
+    width: calc(100% - 35px);
+}
+
+.profile__container--relations,
+.profile__container--activity {
+    width: 100%;
+}
+
+.profile__container--relations__item,
+.profile__container--activity__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.profile__container--relations__item--content,
+.profile__container--activity__item--content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+
+.profile__container--relations__item--content__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.profile__container--relations__item--content__item--title {
+    font-size: 14px;
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: left;
+    /* font-weight: 700; */
+}
+
+.profile__container--relations__item--content__item--followers {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.profile__container--relations__item--content__item--followers__follower {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.profile__container--relations__item--content__item--followers__follower--photo,
+.profile__container--relations__item--content__item--followers__follower--photo img {
+    width: 35px;
+    height: 35px;
+    border-radius: 888px;
+}
+
+.profile__container--relations__item--content__item--followers__follower--photo {
+    border-radius: 888px;
+    margin-right: 10px;
+}
+
+.profile__container--relations__item--content__item--followers__follower--content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 35px);
+    text-align: left;
+}
+
+.profile__container--relations__item--content__item--followers__follower--content .infos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profile__container--relations__item--content__item--followers__follower--content .infos p {
+    font-size: 12px;
+    width: 100%;
+    text-align: left;
+}
+
+.profile__container--relations__item--content__item--followers__follower--content .username {
+    margin-right: 8px;
+    color: var(--black);
+    text-decoration: none;
+    font-size: 14px;
+    width: 100%;
+    text-align: left;
+}
+
+.profile__container--relations__item--content__item--followers__follower--content .fol-btn {
+    text-decoration: none;
+    color: var(--white);
+    background: var(--brand-color);
+    padding: 6px 12px;
+    margin: 7px 0;
+    border-radius: 3px;
+}
+
+.profile__container--relations__item--content__item--followers__follower--content .unfol-btn {
+    text-decoration: none;
+    color: var(--black);
+    background: var(--light-grayish-blue);
+    padding: 6px 12px;
+    margin: 7px 0;
+    border-radius: 3px;
+}
+
+.profile__container--relations__item--content__item--followers__follower--content .unfol-btn:hover {
+    background: var(--light-card-hover);
+}
+
+.profile__container--relations__item--content__item--followers__follower--content .username:hover {
+    text-decoration: underline;
+}
+
+
+
+
+
+
+
+
+/* Modal for collection creation*/
+/************************************************************************************************/
 
 .modal_cont {
     position: fixed;

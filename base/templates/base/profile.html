@@ -2,6 +2,8 @@
 
 {% load static %}
 
+{% load user_extras %}
+
 {% block title %}
 
 Noxa - Profile page - {{ user.username }}
@@ -12,11 +14,44 @@ Noxa - Profile page - {{ user.username }}
 
 <div class="profile__container">
     <div class="profile__container--card profile__container--favs">
+        {% if user.id == request.user.id %}
+            <div class="profile__container--favs__item">
+                <p class="profile__container--favs__item--title">Favorites</p>
+                <div class="home__container--first__item--content">
+                    <div class="home__container--first__item--content__item topics">
+                        <p class="home__container--first__item--content__item--title">Topics</p>
+                        <div class="home__container--first__item--content__item--main">
+                            {% for topic in request.user.favorite_topics.all %}
+                            <div class="favorite-topic-box">
+                                <span class="topic-name">{{ topic.name }}</span>
+                                <button class="favorite-topic-remove" data-topic-id="{{ topic.id }}" type="button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                                        <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% empty %}
+                            <p class="empty">No favorite topics yet. Follow some topics to see them here!</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="home__container--first__item--content__item tags">
+                        <p class="home__container--first__item--content__item--title">Tags</p>
+                        <div class="home__container--first__item--content__item--main">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
         <div class="profile__container--favs__item">
-            <p class="profile__container--favs__item--title">Favorites</p>
-        </div>
-        <div class="profile__container--favs__item">
-            <p class="profile__container--favs__item--title">Collections</p>
+            <p class="profile__container--favs__item--title">
+                {% if user.id == request.user.id %}
+                    My Collections
+                {% else %}
+                    Collections
+                {% endif %}
+            </p>
             <div class="profile__container--favs__item--collections">
 
                 {% if collections %}
@@ -53,7 +88,7 @@ Noxa - Profile page - {{ user.username }}
         <div class="profile__container--main__info">
             <!-- Account Info -->
             <div class="profile__container--main__info--profile">
-                <div class="avatar avatar--medium active">
+                <div class="profile__container--main__info--profile__avatar avatar--medium active">
                     <img src="{{ user.photo.url }}"/>
                 </div>
                 <p>@{{ user.username }}</p>
@@ -107,9 +142,14 @@ Noxa - Profile page - {{ user.username }}
 
             {% if request.user.id == user.id %}
                 <p class="profile__container--main__info--welcome">Hello {{ user.username }}</p>
-                <a class="profile__container--main__info--edit" href="">Edit Profile</a>
+                <a class="profile__container--main__info--edit" href="{% url 'base:edit-profile' user.id %}">Edit Profile</a>
             {% else %}
                 <p class="profile__container--main__info--welcome">{{ user.username }}</p>
+                {% if following_user %}
+                    <a class="profile__container--main__info--unfollow" href="{% url 'base:unfollow-user' user.id %}">Unfollow</a>
+                {% else %}
+                    <a class="profile__container--main__info--follow" href="{% url 'base:follow-user' user.id %}">Follow</a>
+                {% endif %}
             {% endif %}
 
             {% if user.bio %}
@@ -159,8 +199,100 @@ Noxa - Profile page - {{ user.username }}
     </div>
 
     <div class="profile__container--card">
-        <h1>Activity</h1>
-        <h1>Relations</h1>
+        
+        {% if user.id == request.user.id %}
+            <div class="profile__container--card profile__container--activity">
+                <div class="profile__container--activity__item">
+                    <p class="profile__container--activity__item--title">Activity</p>
+                    <div class="profile__container--activity__item--content">
+                        {% if notifications %}
+                            {% for notification in notifications %}
+                                <a href="{% url 'base:mark-notification-read' notification.id %}" class="notification {% if not notification.is_read %}unread{% endif %}">
+                                    {% if not notification.is_read %}
+                                        <div class="notification-indicator"></div>
+                                    {% endif %}
+                                    <div class="profile__container--relations__item--content__item--followers__follower--photo">
+                                        <img src="{{ notification.actor.photo.url }}" alt="">
+                                    </div>
+                                    <div class="text">
+                                        <strong>{{ notification.title }}</strong>
+                                        <p>{{ notification.message }}</p>
+                                        <small>{{ notification.time_since }} ago</small>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <p>Nothing to show here</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+        {% endif %}
+
+        <div class="profile__container--card profile__container--relations">
+            <div class="profile__container--relations__item">
+                <p class="profile__container--relations__item--title">Relations</p>
+                <div class="profile__container--relations__item--content">
+                    <div class="profile__container--relations__item--content__item">
+                        <p class="profile__container--relations__item--content__item--title"><strong>{{ user.get_followers_count }}</strong> followers</p>
+                        {% if user.get_followers_count %}
+                            <div class="profile__container--relations__item--content__item--followers">
+                                {% for follower in followers %}
+                                    <div class="profile__container--relations__item--content__item--followers__follower">
+                                        <div class="profile__container--relations__item--content__item--followers__follower--photo">
+                                            <img src="{{ follower.photo.url }}" alt="">
+                                        </div>
+                                        <div class="profile__container--relations__item--content__item--followers__follower--content">
+                                            <div class="infos">
+                                                <a class="username" href="{% url 'base:user-profile' follower.id %}">@{{ follower.username }}</a>
+                                                <p>{{ follower.school }}</p>
+                                            </div>
+                                            {% if request.user.id != follower.id %}
+                                                {% if request.user|is_following:follower %}
+                                                    <a class="unfol-btn" href="{% url 'base:unfollow-user' follower.id %}">Unfollow</a>
+                                                {% else %}
+                                                    <a class="fol-btn" href="{% url 'base:follow-user' follower.id %}">Follow</a>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="profile__container--relations__item--content__item">
+                        <p class="profile__container--relations__item--content__item--title"><strong>{{ user.get_following_count }}</strong> following</p>
+                        {% if user.get_following_count %}
+                            <div class="profile__container--relations__item--content__item--followers">
+                                {% for following_user in followings %}
+                                    <div class="profile__container--relations__item--content__item--followers__follower">
+                                        <div class="profile__container--relations__item--content__item--followers__follower--photo">
+                                            <img src="{{ following_user.photo.url }}" alt="">
+                                        </div>
+                                        <div class="profile__container--relations__item--content__item--followers__follower--content">
+                                            <div class="infos">
+                                                <a class="username" href="{% url 'base:user-profile' following_user.id %}">@{{ following_user.username }}</a>
+                                                <p>{{ following_user.school }}</p>
+                                            </div>
+                                            {% if request.user.id != following_user.id %}
+                                                {% if request.user|is_following:following_user %}
+                                                    <a class="unfol-btn" href="{% url 'base:unfollow-user' following_user.id %}">Unfollow</a>
+                                                {% else %}
+                                                    <a class="fol-btn" href="{% url 'base:follow-user' following_user.id %}">Follow</a>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                        
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -216,6 +348,24 @@ Noxa - Profile page - {{ user.username }}
 </div>
 
 {% endblock content %}
+
+{% block js %}
+
+<script>
+    $('.home__container--first__item--main .topic .topic__follow').on('click', function(e) {
+        const topicId = $(this).attr('data-topic-id');
+        
+        window.location.href = `/add-topic-to-fav/${topicId}/`;
+    });
+
+    $('.favorite-topic-box .favorite-topic-remove').on('click', function(e) {
+        const topicId = $(this).attr('data-topic-id');
+        
+        window.location.href = `/remove-topic-from-fav/${topicId}/`;
+    });
+</script>
+
+{% endblock js %}
 
 
 

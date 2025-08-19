@@ -44,7 +44,7 @@
             <p class="collection__container--second__header--title">{{ collection.name }}</p>
             <div class="collection__container--second__header--info">
                 <div class="collection__container--second__header--info__author">
-                    <div class="avatar avatar--medium active">
+                    <div class="collection__container--second__header--info__author--avatar avatar--medium active">
                         <img src="{{ collection.user.photo.url }}" />
                     </div>
                     <small><a href="{% url 'base:user-profile' collection.user.id %}">@{{ collection.user.username }}</a></small>

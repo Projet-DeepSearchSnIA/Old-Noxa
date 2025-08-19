@@ -70,6 +70,14 @@
     justify-content: center;
 }
 
+.header__profile--user__notify {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.4rem;
+    color: var(--black);
+}
+
 .header__profile--user__profile {
     display: flex;
     flex-direction: column;
@@ -78,7 +86,7 @@
     padding: 5px;
 }
 
-.avatar {
+.header__profile--user__profile--avatar {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,10 +95,13 @@
     border-radius: 50%;
     border: 2px solid;
     overflow: hidden;
+    width: 40px;
+    height: 40px;
 }
 
-.avatar img {
+.header__profile--user__profile--avatar img {
     width: 40px;
+    height: 40px;
 }
 
 .dropdown-button {
@@ -160,6 +171,47 @@
 
 .dropdown-menu > a:not(:last-child) {
   border-bottom: 1px solid var(--light-line1);
+}
+
+.notification-bell-container {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    background-color: #dc3545; /* Red color */
+    color: white;
+    border-radius: 888px;
+    padding: 1px 4px;
+    /* width: 18px;
+    height: 18px; */
+    font-size: 9px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* border: 2px solid white; */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Optional: Animation for when new notifications arrive */
+.notification-badge {
+    animation: pulse 2s 2;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
 }
 
 

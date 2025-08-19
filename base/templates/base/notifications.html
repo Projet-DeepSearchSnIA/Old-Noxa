@@ -1,0 +1,40 @@
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}
+    Noxa - Notifications
+{% endblock title %}
+
+{% block content %}
+
+<div class="notifications__container">
+    <h1>Notifications</h1>
+    <div class="notifications__container--content">
+        {% if notifications %}
+            {% for notification in notifications %}
+                <a href="{% url 'base:mark-notification-read' notification.id %}" class="notifications__container--content__follower notification {% if not notification.is_read %}unread{% endif %}">
+                    {% if not notification.is_read %}
+                        <div class="notifications_notification-indicator"></div>
+                    {% endif %}
+                    <div class="notifications__container--content__follower--item first">
+                        <div class="notifications__container--content__follower--photo">
+                            <img src="{{ notification.actor.photo.url }}" alt="">
+                        </div>
+                        <div class="notifications__container--content__follower--text">
+                            <strong style="font-size: 1.2rem;">{{ notification.title }}</strong>
+                            <p style="font-size: 1rem;" title="{{ notification.message }}">{{ notification.message }}</p>
+                        </div>
+                    </div>
+                    <div class="notifications__container--content__follower--item second">
+                        <p>{{ notification.time_since }} ago</p>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p>Nothing to show here</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}

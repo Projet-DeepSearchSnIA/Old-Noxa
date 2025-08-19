@@ -144,7 +144,7 @@
                         </button>
                     {% endif %}
 
-                    <button class="action__btn new_discussion" type="button">
+                    <button class="action__btn new_discussion_btn" type="button">
                         <div>
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
                                 <title>New discussion</title>
@@ -166,6 +166,32 @@
 
                 {% else %}
                     <p>Login to get access to actions</p>
+                    <a href="{% url 'authentification:login' %}" class="action__btn login" type="button">
+                        Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="publication__container--control__card actions">
+            <p class="publication__container--control__card--title">Discussions</p>
+            <div class="publication__container--control__card--content">
+                {% if discussions %}
+                    {% for discussion in discussions %}
+                        <div class="publication__container--control__card--content__discussion">
+                            <p>
+                                <a href="{% url 'base:user-profile' discussion.creator.id %}" class="user">
+                                    <small class="author">@{{ discussion.creator }}</small>
+                                </a>
+                                {% if discussion.creator in discussion.publication.authors.all %}
+                                    <span style="color: #ccc;">•</span> <span style="color: var(--dark-grayish-blue);">author</span>
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'base:discussion' discussion.id %}" class="title">{{ discussion.title }}</a>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Nothing to show</p>
                 {% endif %}
             </div>
         </div>
@@ -203,5 +229,35 @@
     </div>
 </div>
 
+<div class="modal__discussion">
+    <div class="modal__discussion--modal">
+        <div class="modal__discussion--modal__header">
+            <p class="modal__discussion--modal__header--title">New discussion room</p>
+            <button type="button" class="close_btn">
+                &times;
+            </button>
+        </div>
+        <form action="{% url 'base:create-discussion' pub.id %}" class="modal__discussion--modal__form" method="POST" id="new-discussion-form">
+            {% csrf_token %}
+            <div class="form__group">
+                <label for="title">Discussion room name</label>
+                <input type="text" name="title" id="title" class="form__group--input">
+            </div>
+
+            <div class="form__group">
+                <label for="description">Room description</label>
+                <textarea name="description" id="description" class="form__group--input" rows="3"></textarea>
+            </div>
+
+            <div class="modal__discussion--modal__btns">
+                <button type="submit" class="create">Add</button>
+                <button type="button" class="cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 {% endblock content %}
+
+

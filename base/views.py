@@ -14,13 +14,14 @@ from django.db.models import Count
 import os
 import markdown
 
-from .models import Topic, Tag, Publication, Message, Collection, CollectionPublication
+from .models import Topic, Tag, Publication, Message, Collection, CollectionPublication, Notification, Discussion
+from . import utils
 
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
-    topics = Topic.objects.all()
+    topics = Topic.objects.all() # all topics displayed on home page
 
     pubs = Publication.objects.filter(
         Q(theme__icontains = q) |
@@ -35,10 +36,13 @@ def home(request):
             .prefetch_related("publications")
         )
         # collections = request.user.collection_set.all()
+
+        favorite_topics = request.user.favorite_topics.all()
     else:
         collections = None
+        favorite_topics = None
 
-    context = {'topics': topics, 'pubs': pubs, "collections": collections}
+    context = {'topics': topics, 'pubs': pubs, "collections": collections, "favorite_topics": favorite_topics}
 
     return render(request, "base/home.html", context)
 
@@ -56,7 +60,10 @@ def publication(request, pk: str):
     else:
         collections = None
 
-    context = {'pub': pub, 'similar_pubs': similar_pubs, "collections": collections}
+    discussions = pub.discussion_set.all()
+
+    context = {'pub': pub, 'similar_pubs': similar_pubs, "collections": collections, 
+               "discussions": discussions}
 
     return render(request, "base/publication.html", context)
 
@@ -114,7 +121,7 @@ def createPublication(request):
             for username in author_usernames:
                 try:
                     author = get_user_model().objects.get(username=username)
-                    publication.authors.add(author)  # assuming ManyToMany field
+                    publication.authors.add(author)
                 except get_user_model().DoesNotExist:
                     pass  # Skip if author doesn't exist
         
@@ -123,7 +130,7 @@ def createPublication(request):
             tag_names = [tag_name.strip() for tag_name in tags_str.split(',') if tag_name.strip()]
             for tag_name in tag_names:
                 tag, _ = Tag.objects.get_or_create(name=tag_name)
-                publication.tags.add(tag)  # assuming ManyToMany field
+                publication.tags.add(tag)
         
         return redirect('base:publication', pk=publication.pk)
     
@@ -190,9 +197,163 @@ def userProfile(request, pk: str):
         .prefetch_related("publications")
     )
 
-    context = {'pubs': pubs, 'user': user, 'collections': collections}
+    # Notifications (only visible for the request.user)
+    notifications = []
+    if request.user == user:
+        notifications = request.user.notifications.filter(is_deleted=False)[:7]
+
+    # Follower and following lists (restricted to 10 each, will refer to a more page on which they will all be)
+    following_user = request.user.following.filter(id=user.id).exists()
+
+    followers = user.followers.all()[:10]
+    followings = user.following.all()[:10]
+
+    context = {'pubs': pubs, 'user': user, 'collections': collections, 'following_user': following_user,
+               'followers': followers, 'followings': followings, 'notifications': notifications}
 
     return render(request, "base/profile.html", context)
+
+
+from django.contrib.auth.hashers import make_password
+
+@login_required
+def editProfile(request, pk: str):
+    User = get_user_model()
+    user = get_object_or_404(User, id=pk)
+    
+    # Check if user can edit this profile
+    if user != request.user:
+        messages.error(request, "You can only edit your own profile")
+        return redirect("base:user-profile", pk)
+
+    context = {'user': user}
+
+    if request.method == "POST":
+        # Get the data
+        photo = request.FILES.get('photo')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        school = request.POST.get('school')
+        bio = request.POST.get('bio')
+        linkedin = request.POST.get('linkedin')
+        github = request.POST.get('github')
+
+        # Validate passwords
+        if password1 and password2:
+            if password1 != password2:
+                messages.error(request, "Passwords do not match. Try again...")
+                return render(request, "base/edit_profile.html", context)
+            
+            # Additional checking, not used yet but will be useful in the future
+            # if len(password1) < 8:
+            #     messages.error(request, "Password must be at least 8 characters long")
+            #     return render(request, "base/edit_profile.html", context)
+        
+        try:
+            # Update user fields
+            user.email = email
+            user.school = school or ""
+            user.bio = bio or ""
+            user.linkedin = linkedin or ""
+            user.github = github or ""
+
+            # Update password only if provided
+            if password1:
+                user.password = make_password(password1)
+            
+            # Update photo only if provided
+            if photo:
+                user.photo = photo
+            
+            user.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect("base:user-profile", user.id)
+
+        except Exception as e:
+            messages.error(request, f"Something went wrong while updating: {str(e)}")
+            return render(request, "base/edit_profile.html", context)
+
+    return render(request, "base/edit_profile.html", context)
+
+# @login_required
+# def editProfile(request, pk: str):
+#     User = get_user_model()
+#     user = get_object_or_404(User, id=pk)
+
+#     context = {'user': user}
+
+#     if request.method == "POST":
+#         # Get the data
+#         photo = request.POST.get('photo')
+#         email = request.POST.get('email')
+#         password = request.POST.get('password1')
+#         password2 = request.POST.get('password2')
+#         school = request.POST.get('school')
+#         bio = request.POST.get('bio')
+#         linkedin = request.POST.get('linkedin')
+#         github = request.POST.get('github')
+
+#         if password != password2:
+#             messages.error(request, "Missmatching passwords. Try again...")
+#             return render(request, "base/edit_profile.html", context)
+        
+#         try:
+#             user.email = email
+#             user.password = password
+#             user.school = school
+#             user.bio = bio
+#             user.linkedin = linkedin
+#             user.github = github
+
+#             if photo:
+#                 user.photo = photo
+            
+#             user.save()
+
+#             return redirect("base:user-profile", user.id)
+
+#         except Exception as e:
+#             messages.error(request, f"Something went wrong while updating : {str(e)}")
+#             return render(request, "base/edit_profile.html", context)
+
+#     return render(request, "base/edit_profile.html", context)
+
+def followUser(request, pk: str):
+    User = get_user_model()
+    user_to_follow = get_object_or_404(User, id=pk)
+    
+    # Prevent users from following themselves
+    if user_to_follow == request.user:
+        messages.error(request, "You cannot follow yourself")
+        return redirect('base:user-profile', pk)
+    
+    # Check if already following
+    if request.user.following.filter(id=user_to_follow.id).exists():
+        messages.info(request, f"You are already following {user_to_follow.username}")
+    else:
+        request.user.following.add(user_to_follow)
+        messages.success(request, f"You are now following {user_to_follow.username}")
+        
+        # Create notification
+        utils.NotificationManager.new_follower(request.user, user_to_follow)
+    
+    return redirect('base:user-profile', pk)
+
+
+@login_required
+def unfollowUser(request, pk: str):
+    User = get_user_model()
+    user_to_unfollow = get_object_or_404(User, id=pk)
+    
+    if request.user.following.filter(id=user_to_unfollow.id).exists():
+        request.user.following.remove(user_to_unfollow)
+        messages.success(request, f"You have unfollowed {user_to_unfollow.username}")
+    else:
+        messages.info(request, f"You are not following {user_to_unfollow.username}")
+    
+    return redirect('base:user-profile', pk)
+
 
 def createCollection(request):
     if request.method == "POST":
@@ -202,7 +363,7 @@ def createCollection(request):
             messages.success(request, "Collection created successfully!")
         else:
             messages.error(request, "Name is required.")
-    return redirect(request.META.get("HTTP_REFERER", "home"))
+    return redirect(request.META.get("HTTP_REFERER", "base:home"))
 
 @login_required
 def deleteCollection(request, pk: str):
@@ -309,6 +470,154 @@ def removeTopicFromFav(request, pk: str):
     messages.success(request, f'"{topic.name}" removed from your favorites')
     
     return redirect(request.META.get('HTTP_REFERER', 'base:home'))
+
+
+# mark notification as read logic
+@login_required
+def mark_notification_read(request, notification_id):
+    notification = get_object_or_404(
+        Notification, 
+        id=notification_id, 
+        recipient=request.user
+    )
+    
+    # Mark as read
+    notification.mark_as_read()
+    
+    # Redirect to the notification's target URL
+    if notification.action_url:
+        return redirect(notification.action_url)
+    else:
+        # Fallback to actor's profile
+        return redirect('base:user-profile', pk=notification.actor.id)
+
+
+@login_required
+def notificationsPage(request):
+    notifications = request.user.notifications.filter(
+        is_deleted=False
+    ).order_by('-created')[:50]  # Show last 50 notifications
+    
+    context = {
+        'notifications': notifications
+    }
+    return render(request, 'base/notifications.html', context)
+
+
+@login_required
+def createDiscussion(request, pk: str):
+    if request.method == "POST":
+        title = request.POST.get("title", "").strip()
+        description = request.POST.get("description", "").strip()
+
+        if not title:
+            messages.error(request, "Discussion room name is required")
+            return redirect(request.META.get('HTTP_REFERER', 'base:home'))
+        
+        if not description:
+            messages.error(request, "Description is required")
+            return redirect(request.META.get('HTTP_REFERER', 'base:home'))
+        
+        # Get the publication
+        pub = get_object_or_404(Publication, id=pk)
+        
+        discussion = Discussion.objects.create(
+            creator = request.user,
+            publication = pub,
+            title = title,
+            description = description
+        )
+
+        messages.success(request, "Discussion room created successful!")
+
+        for author in pub.authors.all():
+            if request.user.id != author.id:
+                utils.NotificationManager.new_discussion_in_publication(request.user, author, discussion)
+
+    return redirect(request.META.get('HTTP_REFERER', 'base:home'))
+
+
+@login_required
+def discussion(request, pk: str):
+    # Get the discussion
+    discussion = get_object_or_404(Discussion, id=pk)
+    
+    # Get messages in chronological order (oldest first for chat)
+    # Only get top-level messages (not replies)
+    discussion_messages = discussion.message_set.filter(reply_to__isnull=True).order_by('created')
+    
+    # Get participants
+    participants = discussion.participants.all()
+
+    if request.method == "POST":
+        body = request.POST.get("body")
+        reply_to_id = request.POST.get("reply_to")
+        
+        if body and body.strip():  # Only create message if body is not empty
+            # Check if this is a reply
+            reply_to_message = None
+            if reply_to_id:
+                try:
+                    reply_to_message = Message.objects.get(
+                        id=reply_to_id, 
+                        discussion=discussion
+                    )
+                except Message.DoesNotExist:
+                    reply_to_message = None
+            
+            message = Message.objects.create(
+                user=request.user,
+                discussion=discussion,
+                body=body.strip(),
+                reply_to=reply_to_message
+            )
+            
+            # Add user to participants if not already
+            if request.user not in participants:
+                discussion.participants.add(request.user)
+            
+            # Create notifications
+            notification_recipients = set()
+            
+            # If it's a reply, notify the original message author
+            if reply_to_message and reply_to_message.user != request.user:
+                notification_recipients.add(reply_to_message.user)
+            
+            # Notify other participants (excluding the message sender)
+            for participant in participants:
+                if participant != request.user:
+                    notification_recipients.add(participant)
+            
+            # Also notify the discussion creator if they're not a participant yet
+            if discussion.creator != request.user and discussion.creator not in participants:
+                notification_recipients.add(discussion.creator)
+            
+            # Send notifications
+            for recipient in notification_recipients:
+                utils.NotificationManager.discussion_reply(
+                    request.user, 
+                    recipient, 
+                    discussion, 
+                    message
+                )
+            
+            return redirect("base:discussion", pk=discussion.id)
+
+    context = {
+        "discussion": discussion, 
+        "discussion_messages": discussion_messages,
+        "participants": participants,
+        "participants_count": participants.count()
+    }
+    return render(request, "base/discussion.html", context)
+
+
+
+
+
+
+
+
 
 
 

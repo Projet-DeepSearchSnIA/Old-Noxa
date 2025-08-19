@@ -1,3 +1,7 @@
+// script.js
+
+// drop down from navbar user profile
+// it remains to make it disappear when the event is not taking place in it right after we show it
 const dropdownMenu = document.querySelector(".dropdown-menu");
 const dropdownButton = document.querySelector(".dropdown-button");
 
@@ -7,6 +11,8 @@ if (dropdownButton) {
   });
 }
 
+// error messages, info messages and success messages handling
+// We get these messages directly from django backend in pretty much any endpoint
 document.querySelectorAll(".toast-message").forEach((toast) => {
     const closeBtn = toast.querySelector(".close-btn");
 
@@ -22,13 +28,18 @@ document.querySelectorAll(".toast-message").forEach((toast) => {
     }, timeout);
 });
 
-const closeBtn = document.querySelector(".modal__header .close_btn");
-const cancelBtn = document.querySelector(".cancel");
-const modal = document.querySelector(".modal_cont");
+// Collection form modal #home.html, #publication.html and #profile.html
+// Make the buttons on the form work and make sure the form only appears 
+// when we click on the new collection button
 
-const newCollBtn = document.querySelector(".profile__container--favs__item--collections__newcol");
+// This works on three different pages the same way (#home.html, #publication.html and #profile.html)
+const closeBtn = document.querySelector(".modal__header .close_btn"); // close modal
+const cancelBtn = document.querySelector(".modal__btns .cancel");
+const modal = document.querySelector(".modal_cont"); // the modal container
 
-const addToCollectionBtn = document.querySelector(".add_to_collection_btn") // add to collection btn #publication.html
+const newCollBtn = document.querySelector(".profile__container--favs__item--collections__newcol"); // new collection button
+
+const addToCollectionBtn = document.querySelector(".add_to_collection_btn") // add to collection btn
 
 if (closeBtn) {
   closeBtn.addEventListener('click', () => {
@@ -44,7 +55,7 @@ if (cancelBtn) {
 
 if (newCollBtn) {
   newCollBtn.addEventListener('click', () => {
-    modal.classList.toggle("show")
+    modal.classList.toggle("show") // we switch
   });
 }
 
@@ -54,6 +65,38 @@ if (addToCollectionBtn) {
   });
 }
 
+
+//Second modal in #publication.html: discussion creation modal form
+const closeBtnDis = document.querySelector(".modal__discussion--modal__header .close_btn"); // close modal
+const cancelBtnDis = document.querySelector(".modal__discussion--modal__btns .cancel");
+const modalDis = document.querySelector(".modal__discussion"); // the modal container
+
+const newDiscussionBtn = document.querySelector(".new_discussion_btn") // add to collection btn
+
+if (closeBtnDis) {
+  closeBtnDis.addEventListener('click', () => {
+    modalDis.classList.remove("show")
+  });
+}
+
+if (cancelBtnDis) {
+  cancelBtnDis.addEventListener('click', () => {
+    modalDis.classList.remove("show")
+  });
+}
+
+
+if (newDiscussionBtn) {
+  newDiscussionBtn.addEventListener('click', () => {
+    modalDis.classList.toggle("show")
+  });
+}
+
+
+
+
+// Collection publications table #collection.html
+// facilities to make the table columns resizable
 document.addEventListener('DOMContentLoaded', function () {
     const createResizableTable = function (table) {
         const cols = table.querySelectorAll('th');
