@@ -327,7 +327,7 @@
 .notification {
     width: 100%;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     font-size: 13px;
     text-decoration: none;
@@ -479,6 +479,28 @@
 
 .profile__container--relations__item--content__item--followers__follower--content .username:hover {
     text-decoration: underline;
+}
+
+
+/* More functionality css */
+
+.more {
+    display: flex;
+    align-items: center;
+    justify-content:flex-start;
+    color: var(--dark-grayish-blue);
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.more:hover {
+    text-decoration: underline;
+}
+
+.more div {
+    display: flex;
+    align-items: center;
+    justify-content:center;
 }
 
 

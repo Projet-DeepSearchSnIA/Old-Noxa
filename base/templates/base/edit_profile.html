@@ -1,3 +1,45 @@
+<!--
+=== USER PROFILE EDIT PAGE TEMPLATE ===
+Description: Form for authenticated users to modify their personal profile information
+
+Expected Context Data from View:
+- user: User object with current profile data (.username, .email, .photo, .school, .bio, .linkedin, .github)
+
+Template Features:
+1. PROFILE PICTURE UPLOAD:
+  - Click-to-upload image interface with live preview
+  - File input accepts image formats only
+  - JavaScript preview function shows selected image before upload
+
+2. FORM FIELDS:
+  - Username: Display only (disabled field)
+  - Email: Required field with email validation
+  - Password: Optional password change with confirmation
+  - Institution: Optional school/university field
+  - Bio: Multi-line textarea for user description
+  - Social Links: LinkedIn and GitHub profile URLs
+
+3. FORM VALIDATION:
+  - Client-side: Required fields, email format, file type validation
+  - Server-side: Password matching, field validation (handled by view)
+
+4. FORM ACTIONS:
+  - Cancel: Returns to user profile without saving
+  - Save: Submits form with multipart encoding for file upload
+
+Required User Permissions:
+- Must be authenticated and editing own profile (enforced by view)
+
+Security Features:
+- CSRF protection token
+- File upload restricted to images
+- Username modification disabled (read-only)
+
+JavaScript Dependencies:
+- previewPhoto() function for image preview functionality
+- FileReader API for client-side image preview
+-->
+
 
 {% extends "main.html" %}
 

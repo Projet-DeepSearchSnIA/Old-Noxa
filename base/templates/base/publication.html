@@ -1,3 +1,70 @@
+<!--
+=== PUBLICATION DETAIL PAGE TEMPLATE ===
+Description: Academic publication detail view with metadata, abstract, actions, and discussion system
+
+Expected Context Data from View:
+- pub: Publication object with full details (.theme, .topic, .tags, .authors, .summary_html, .affiliations, .created, .user)
+- similar_pubs: QuerySet of related Publication objects based on topic/tags
+- discussions: QuerySet of Discussion objects related to this publication
+- collections: QuerySet of current user's Collection objects (for add-to-collection functionality)
+
+Required Publication Model Methods:
+- pub.get_affiliations_list: Method returning list of author affiliations
+- pub.summary_html: HTML-formatted abstract content (safe for rendering)
+
+Template Features:
+1. PUBLICATION METADATA:
+  - Topic breadcrumb and tag navigation
+  - Publication date and original uploader info
+  - Title, authors with profile links
+  - Institutional affiliations listing
+
+2. CONTENT DISPLAY:
+  - HTML-formatted abstract with safe rendering
+  - Similar papers recommendation system
+  - Color-coded tag system with cycling colors
+
+3. SIDEBAR CONTROLS:
+  - Paper information (category, tags with color coding)
+  - PDF access link
+  - Action buttons for authenticated users
+
+4. USER ACTIONS (authenticated only):
+  - Add to collection with autocomplete datalist
+  - Update publication (authors only)
+  - Create new discussion room
+  - Contact authors functionality
+
+5. DISCUSSION SYSTEM:
+  - List of existing discussions with creator info
+  - Author badges for publication authors
+  - Links to individual discussion rooms
+
+6. MODAL INTERFACES:
+  - Add to Collection: Input with existing collection suggestions
+  - New Discussion: Title and description form
+  - Collection creation modal (inherited)
+
+Required User Permissions:
+- Any user: Can view publication details and discussions
+- Authenticated users: Can add to collections, create discussions
+- Publication authors: Can update publication content
+- Anonymous users: Prompted to login for actions
+
+CSS Features:
+- Inline tag color system with 6 rotating colors
+- Responsive layout with main content and sidebar
+- Modal styling and interaction states
+
+JavaScript Dependencies:
+- Modal open/close functionality
+- Form submission handling
+- Collection management system
+-->
+
+
+
+
 {% extends "main.html" %}
 
 {% load static %}
@@ -113,7 +180,7 @@
         <div class="publication__container--control__card access">
             <p class="publication__container--control__card--title">Access paper</p>
             <div class="publication__container--control__card--content">
-                <a href="{% url 'base:pdf' pub.id %}">View PDF</a>
+                <a href="{% url 'base:pdf' pub.id %}" target="_blank">View PDF</a>
             </div>
         </div>
 

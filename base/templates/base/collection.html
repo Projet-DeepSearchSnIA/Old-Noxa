@@ -1,3 +1,46 @@
+<!--
+=== COLLECTION DETAIL PAGE TEMPLATE ===
+Description: Display a specific user collection with its publications in a table format
+
+Expected Context Data from View:
+- collection: Collection object with .name, .user, .created fields
+- user: User object who owns the collection (for profile links and permissions)
+- collections: QuerySet of all user's collections with pub_count annotation (sidebar)
+- publications: QuerySet of CollectionPublication objects with .publication and .added fields
+
+Template Features:
+1. COLLECTIONS SIDEBAR:
+  - List of all user's collections with publication counts
+  - Delete buttons for collection owners
+  - "New Collection" button for collection owner
+
+2. COLLECTION HEADER:
+  - Collection name and metadata (creator, creation date, paper count)
+  - Creator avatar and profile link
+  - Publication count display
+
+3. PUBLICATIONS TABLE:
+  - Numbered list of publications in collection
+  - Publication title, topic, authors, and page count
+  - Date added to collection
+  - PDF view and publication detail links
+  - Delete from collection action (owner only)
+
+4. INTERACTIVE ELEMENTS:
+  - Confirmation dialog for removing publications
+  - Collection deletion functionality
+  - Responsive table layout
+
+Required User Permissions:
+- Any user: Can view public collections
+- Collection owner: Can delete publications from collection and manage collections
+
+JavaScript Dependencies:
+- jQuery for delete confirmation and event handling
+- Collection management modal (inherited from main template)
+-->
+
+
 {% extends "main.html" %}
 
 {% load static %}

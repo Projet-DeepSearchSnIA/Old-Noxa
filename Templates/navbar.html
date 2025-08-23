@@ -25,6 +25,8 @@
 
         {% if request.user.is_authenticated %}
 
+            <a class="profile__container--main__pubs--pubs__publish" href="{% url 'base:create-publication' %}">Publish</a>
+
             <!-- Logged In -->
             <div class="header__profile--user">
                 <a href="{% url 'base:notifications' %}" class="header__profile--user__notify" title="Notifications">

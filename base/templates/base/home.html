@@ -1,3 +1,45 @@
+<!--
+=== HOME PAGE TEMPLATE ===
+Description: Academic publications discovery homepage with personalized content
+
+Expected Context Data from View:
+- topics: QuerySet of trending Topic objects with .publication_set for counting
+- favorite_topics: User's favorited topics (for authenticated users)
+- collections: User's collections with pub_count annotation (for authenticated users)
+- pubs: QuerySet of recent Publication objects with .authors relationship
+- user: Current user object (for authentication checks)
+
+Template Features:
+1. TRENDING TOPICS SECTION:
+   - Displays popular topics with publication count
+   - Heart-shaped follow/unfollow buttons for authenticated users
+   - Shows filled heart if topic is in user's favorites
+
+2. FAVORITES SECTION (authenticated users only):
+   - User's favorite topics with remove functionality
+   - User's collections with publication counts and creation dates
+   - "New Collection" button to create collections
+
+3. RECENT PUBLICATIONS SECTION:
+   - List of latest publications with theme, authors, description
+   - Links to publication detail and PDF view
+   - Author profile links
+
+4. INTERACTIVE ELEMENTS:
+   - Modal for creating new collections
+   - AJAX-style topic follow/unfollow via URL redirects
+   - Collection deletion functionality
+
+Required User Permissions:
+- Anonymous users: Can view trending topics and recent publications
+- Authenticated users: Can follow topics, create/manage collections, view personalized content
+
+JavaScript Dependencies:
+- jQuery for event handling
+- Topic follow/unfollow functionality
+- Modal controls for collection creation
+-->
+
 
 {% extends "main.html" %}
 
@@ -121,7 +163,7 @@
                 <div class="recent">
                     <div class="recent__specs">
                         <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
-                        <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}">[pdf]</a>
+                        <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}" target="_blank">[pdf]</a>
                     </div>
                     <div class="recent__authors">
                         {% for author in pub.authors.all %}

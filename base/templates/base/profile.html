@@ -1,3 +1,66 @@
+<!--
+=== USER PROFILE PAGE TEMPLATE ===
+Description: Comprehensive user profile displaying personal info, publications, collections, and social connections
+
+Expected Context Data from View:
+- user: User object being viewed (.username, .photo, .bio, .school, .linkedin, .github, .date_joined)
+- request.user: Current authenticated user for permission checks
+- following_user: Boolean indicating if current user follows the profile user
+- collections: QuerySet of user's Collection objects with pub_count annotation
+- pubs: QuerySet of user's Publication objects with .authors relationship
+- notifications: QuerySet of recent Notification objects (for profile owner only)
+- followers: QuerySet of User objects following the profile user
+- followings: QuerySet of User objects that the profile user follows
+
+Required Custom Template Tags:
+- user_extras.is_following: Template filter to check follow relationships
+- Standard Django filters: timesince, date
+
+Template Features:
+1. FAVORITES SECTION (profile owner only):
+  - User's favorite topics with remove functionality
+  - Placeholder for tags section (not implemented)
+
+2. COLLECTIONS MANAGEMENT:
+  - List of user's collections with publication counts
+  - Delete collection functionality (owner only)
+  - Create new collection modal
+
+3. PROFILE INFORMATION:
+  - Avatar, username, join date
+  - Institution and social media links (LinkedIn, GitHub)
+  - Personal bio description
+  - Edit profile link (owner) or Follow/Unfollow button (visitors)
+
+4. PUBLICATIONS SECTION:
+  - User's published papers with metadata
+  - Links to publication details and PDF viewer
+  - "Publish" button for profile owner
+  - Author collaboration display
+
+5. ACTIVITY FEED (profile owner only):
+  - Recent notifications with read/unread status
+  - Notification interactions and timestamps
+
+6. SOCIAL CONNECTIONS:
+  - Followers list with follow/unfollow actions
+  - Following list with relationship management
+  - User counts and profile links
+
+Required User Permissions:
+- Any user: Can view public profile information
+- Profile owner: Can edit profile, manage collections, view notifications
+- Authenticated users: Can follow/unfollow other users
+
+JavaScript Dependencies:
+- jQuery for topic management and modal controls
+- Collection creation and deletion functionality
+- Follow/unfollow interactions
+-->
+
+
+
+
 {% extends "main.html" %}
 
 {% load static %}
@@ -235,8 +298,8 @@ Noxa - Profile page - {{ user.username }}
                 <p class="profile__container--relations__item--title">Relations</p>
                 <div class="profile__container--relations__item--content">
                     <div class="profile__container--relations__item--content__item">
-                        <p class="profile__container--relations__item--content__item--title"><strong>{{ user.get_followers_count }}</strong> followers</p>
-                        {% if user.get_followers_count %}
+                        <p class="profile__container--relations__item--content__item--title"><strong>{{ followers_count }}</strong> followers</p>
+                        {% if followers_count %}
                             <div class="profile__container--relations__item--content__item--followers">
                                 {% for follower in followers %}
                                     <div class="profile__container--relations__item--content__item--followers__follower">
@@ -259,12 +322,23 @@ Noxa - Profile page - {{ user.username }}
                                         
                                     </div>
                                 {% endfor %}
+
+                                {% if followers_count > 3 %}
+                                <a class="more" href="{% url 'base:user-followers' user.id %}">
+                                    <p>More</p>
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </div>
+                                </a>
+                                {% endif %}
                             </div>
                         {% endif %}
                     </div>
                     <div class="profile__container--relations__item--content__item">
-                        <p class="profile__container--relations__item--content__item--title"><strong>{{ user.get_following_count }}</strong> following</p>
-                        {% if user.get_following_count %}
+                        <p class="profile__container--relations__item--content__item--title"><strong>{{followings_count}}</strong> following</p>
+                        {% if followings_count %}
                             <div class="profile__container--relations__item--content__item--followers">
                                 {% for following_user in followings %}
                                     <div class="profile__container--relations__item--content__item--followers__follower">
@@ -287,6 +361,17 @@ Noxa - Profile page - {{ user.username }}
                                         
                                     </div>
                                 {% endfor %}
+
+                                {% if followings_count > 3 %}
+                                <a class="more" href="{% url 'base:user-followings' user.id %}">
+                                    <p>More</p>
+                                    <div>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </div>
+                                </a>
+                                {% endif %}
                             </div>
                         {% endif %}
                     </div>
