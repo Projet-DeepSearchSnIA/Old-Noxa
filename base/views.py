@@ -11,11 +11,13 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.db.models import Count
 from django.contrib.auth.hashers import make_password
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 import os
 import markdown
 
-from .models import Topic, Tag, Publication, Message, Collection, CollectionPublication, Notification, Discussion
+from .models import Topic, Tag, Publication, Message, Collection, CollectionPublication, Notification, Discussion, track_search_click
 from . import utils
 
 
@@ -68,7 +70,9 @@ def home(request):
     pubs = Publication.objects.filter(
         Q(theme__icontains = q) |
         Q(topic__name__icontains = q) |
-        Q(tags__name__icontains = q)
+        Q(tags__name__icontains = q) |
+        Q(authors__username__icontains = q) |
+        Q(description__icontains = q)
     ).distinct()
 
     if request.user.is_authenticated:
@@ -87,6 +91,133 @@ def home(request):
     context = {'topics': topics, 'pubs': pubs, "collections": collections, "favorite_topics": favorite_topics}
 
     return render(request, "base/home.html", context)
+
+
+##############################################################################################
+################################## SEARCH FUNCTIONALITY ######################################
+##############################################################################################
+
+def search(request, tab=None):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+
+    topics = Topic.objects.all() # all topics displayed on home page
+
+    if request.user.is_authenticated:
+        collections = (
+            request.user.collection_set
+            .annotate(pub_count=Count("publications"))
+            .prefetch_related("publications")
+        )
+        # collections = request.user.collection_set.all()
+
+        favorite_topics = request.user.favorite_topics.all()
+    else:
+        collections = None
+        favorite_topics = None
+
+    # If no tab is specified, default to 'all'
+    if tab is None:
+        tab = 'all'
+
+    allowed_tabs = ['all', 'publications', 'authors', 'collections', 'discussions', 'profiles', 'tags']
+    if tab not in allowed_tabs:
+        # Redirect to 'all' tab if invalid tab is provided
+        return HttpResponseRedirect(f"{reverse('base:search')}?q={q}")
+    
+    # Choose template based on tab
+    template_map = {
+        'all': 'base/search/search.html',
+        'publications': 'base/search/publications.html',
+        'authors': 'base/search/authors.html',
+        'collections': 'base/search/collections.html',
+        'discussions': 'base/search/discussions.html',
+        'profiles': 'base/search/profiles.html',
+        'tags': 'base/search/tags.html',
+    }
+
+    template_name = template_map.get(tab, 'base/search/search.html')
+
+    search_results = getSearchResult(q, tab)
+
+    context = {'q': q, 'active_tab': tab, 'topics': topics, "collections": collections, 
+               "favorite_topics": favorite_topics, 'search_results': search_results}
+
+    return render(request, template_name, context)
+
+
+# Search logic
+def getSearchResult(query, tab):
+    User = get_user_model()
+
+    if not query:
+        return {}
+
+    # Define search configurations
+    search_config = {
+        'publications': {
+            'model': Publication,
+            'fields': ['theme', 'topic__name', 'tags__name', 'authors__username', 'description']
+        },
+        'authors': {
+            'model': User,
+            'fields': ['username', 'school'],
+            'filter': Q(pub_authored__isnull=False)
+        },
+        'collections': {
+            'model': Collection,
+            'fields': ['name', 'publications__theme', 'publications__topic__name', 
+                      'publications__tags__name', 'publications__authors__username', 
+                      'publications__description']
+        },
+        'discussions': {
+            'model': Discussion,
+            'fields': ['title', 'description', 'creator__username', 'publication__theme',
+                      'publication__topic__name', 'publication__tags__name', 
+                      'participants__username']
+        },
+        'profiles': {
+            'model': User,
+            'fields': ['username', 'school']
+        },
+        'tags': {
+            'model': Tag,
+            'fields': ['name']
+        }
+    }
+
+    def build_query(config):
+        """Build Q object from configuration"""
+        q_objects = Q()
+        for field in config['fields']:
+            q_objects |= Q(**{f"{field}__icontains": query})
+        
+        queryset = config['model'].objects.filter(q_objects).distinct()
+        
+        # Apply additional filters if specified
+        if 'filter' in config:
+            queryset = queryset.filter(config['filter'])
+        
+        return queryset
+
+    if tab == "all":
+        # Return limited results for all categories
+        return {
+            category: build_query(config)[:3] 
+            for category, config in search_config.items()
+        }
+    elif tab in search_config:
+        # Return full results for specific category
+        return build_query(search_config[tab])[:30]
+    else:
+        return {}
+
+
+
+
+
+#######################################################################################################
+#######################################################################################################
+
 
 def publication(request, pk: str):
     """
@@ -147,6 +278,9 @@ def publication(request, pk: str):
         collections = None
 
     discussions = pub.discussion_set.all()
+
+    # Track search click if coming from search
+    track_search_click(request, pub)
 
     context = {'pub': pub, 'similar_pubs': similar_pubs, "collections": collections, 
                "discussions": discussions}
@@ -472,6 +606,9 @@ def userProfile(request, pk: str):
 
     followers_count = user.get_followers_count()
     followings_count = user.get_following_count()
+
+    # Track search click if coming from search
+    track_search_click(request, user)
 
     context = {'pubs': pubs, 'user': user, 'collections': collections, 'following_user': following_user,
                'followers': followers, 'followings': followings, 'notifications': notifications, 
@@ -828,6 +965,9 @@ def collection(request, pk_u: str, pk_c: str):
     )
     publications = CollectionPublication.objects.filter(collection=collection).select_related('publication')
 
+    # Track search click if coming from search
+    track_search_click(request, collection)
+
     context = {'user': user, 'collection': collection, "publications": publications, "collections": collections}
     return render(request, "base/collection.html", context)
 
@@ -1100,6 +1240,9 @@ def discussion(request, pk: str):
             
             return redirect("base:discussion", pk=discussion.id)
 
+    # Track search click if coming from search
+    track_search_click(request, discussion)
+
     context = {
         "discussion": discussion, 
         "discussion_messages": discussion_messages,
@@ -1109,7 +1252,16 @@ def discussion(request, pk: str):
     return render(request, "base/discussion.html", context)
 
 
+def viewTag(request, pk: str):
+    tag = get_object_or_404(Tag, id=pk)
 
+    publications = tag.publications.all()
+
+    context = {
+        'tag': tag,
+        'publications': publications,
+    }
+    return render(request, "base/tag.html", context)
 
 
 

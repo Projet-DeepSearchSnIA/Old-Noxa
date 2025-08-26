@@ -5,6 +5,8 @@ app_name = 'base'
 
 urlpatterns = [
     path('', views.home, name="home"),
+    path('search/', views.search, name="search"),
+    path('search/<str:tab>/', views.search, name='search_tab'),
     path('profile/<str:pk>/', views.userProfile, name="user-profile"),
     path('edit-profile/<str:pk>/', views.editProfile, name="edit-profile"),
     path('follow-user/<str:pk>/', views.followUser, name="follow-user"),
@@ -28,4 +30,5 @@ urlpatterns = [
     path('notifications/', views.notificationsPage, name='notifications'),
     path('create-discussion/<str:pk>/', views.createDiscussion, name="create-discussion"),
     path('discussion/<str:pk>/', views.discussion, name="discussion"),
+    path('tag/<str:pk>/', views.viewTag, name="tag"),
 ]

@@ -126,8 +126,8 @@ Noxa - Profile page - {{ user.username }}
                         </a>
                         {% if request.user.id == user.id %}
                         <div class="delete" for="{{ collection.id }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                         </div>
                         {% endif %}
@@ -170,8 +170,6 @@ Noxa - Profile page - {{ user.username }}
                 {% if user.linkedin %}
                     <div class="profile__container--main__info--socials__item linkedin" title="linkedin">
                         <div class="svg">
-                            <?xml version="1.0" encoding="iso-8859-1"?>
-                            <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
                             <svg height="24" width="24" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
                                 viewBox="0 0 382 382" xml:space="preserve" fill="currentColor">
                             <path d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
@@ -238,18 +236,40 @@ Noxa - Profile page - {{ user.username }}
                 {% if pubs %}
                     {% for pub in pubs %}
                         <div class="recent">
-                        <div class="recent__specs">
-                            <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
-                            <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}">[pdf]</a>
+                            <div class="recent__specs">
+                                <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
+                                <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}" target="_blank">[pdf]</a>
+                            </div>
+                            
+                            {% if pub.topic %}
+                            <div class="recent__meta">
+                                <a class="recent__topic" href="">{{ pub.topic.name }}</a>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="recent__authors">
+                                {% for author in pub.authors.all %}
+                                    <a class="recent__authors--author" href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a>
+                                {% endfor %}
+                            </div>
+                            
+                            <p class="recent__description">{{ pub.description }}</p>
+                            
+                            {% if pub.tags.exists %}
+                            <div class="recent__tags">
+                                {% for tag in pub.tags.all %}
+                                    <a class="recent__tag" href="">#{{ tag.name }}</a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="recent__footer">
+                                <small>Published {{ pub.created|timesince }} ago</small>
+                                {% if pub.page_count %}
+                                <small class="recent__pages">{{ pub.page_count }} pages</small>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="recent__authors">
-                            {% for author in pub.authors.all %}
-                                <a class="recent__authors--author" href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a>
-                            {% endfor %}
-                        </div>
-                        <p class="recent__description">{{ pub.description }}</p>
-                        <small>Published {{ pub.created|timesince }} ago</small>
-                    </div>
                     {% endfor %}
                 {% else %}
                     <p class="profile__container--main__pubs--pubs__empty">Nothing to show</p>

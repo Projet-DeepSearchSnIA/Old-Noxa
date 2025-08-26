@@ -63,8 +63,8 @@ JavaScript Dependencies:
                             <small>{{ collection.created|timesince }} ago</small>
                         </a>
                         <div class="delete" for="{{ collection.id }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                         </div>
                     </div>
@@ -159,6 +159,29 @@ JavaScript Dependencies:
             {% endif %}
         </div>
 
+    </div>
+</div>
+
+<div class="modal_cont">
+    <div class="modal">
+        <div class="modal__header">
+            <p class="modal__header--title">Create Collection</p>
+            <button type="button" class="close_btn">
+                &times;
+            </button>
+        </div>
+        <form action="{% url 'base:create-collection' %}" class="modal__form" method="POST" autocomplete="off">
+            {% csrf_token %}
+            <div class="form__group">
+                <label for="name">Collection name</label>
+                <input type="text" name="name" id="name" class="form__group--input">
+            </div>
+
+            <div class="modal__btns">
+                <button type="submit" class="create">Create</button>
+                <button type="button" class="cancel">Cancel</button>
+            </div>
+        </form>
     </div>
 </div>
 

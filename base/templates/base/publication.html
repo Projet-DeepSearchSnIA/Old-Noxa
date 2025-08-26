@@ -99,7 +99,7 @@ JavaScript Dependencies:
             <a href="">{{ pub.topic }}</a>
             <span style="color: #999; margin: 0 5px;">›</span>
             {% for tag in pub.tags.all %}
-                <a href="" style="margin-left: 5px; color: #555; text-decoration: none;">
+                <a href="{% url 'base:tag' tag.id %}" style="margin-left: 5px; color: #555; text-decoration: none;">
                     #{{ tag.name }}
                 </a>
                 {% if not forloop.last %}
@@ -108,6 +108,17 @@ JavaScript Dependencies:
             {% endfor %}
         </span>
         <small class="publication__container--view__date">[Published on {{ pub.created }} by <a href="{% url 'base:user-profile' pub.user.id %}">{{ pub.user.username }}</a>]</small>
+        <div class="publication__container--view__stats">
+            {% if pub.page_count %}
+                <span class="stat">{{ pub.page_count }} pages</span>
+                <span class="separator">•</span>
+            {% endif %}
+            <span class="stat">{{ pub.created|timesince }} ago</span>
+            {% if discussions.count %}
+                <span class="separator">•</span>
+                <span class="stat">{{ discussions.count }} discussion{{ discussions.count|pluralize }}</span>
+            {% endif %}
+        </div>
         <p class="publication__container--view__theme">{{ pub.theme }}</p>
         <div class="publication__container--view__authors">
             {% for author in pub.authors.all %}
@@ -143,15 +154,37 @@ JavaScript Dependencies:
                     <div class="recent">
                         <div class="recent__specs">
                             <a class="recent__specs--theme" href="{% url 'base:publication' pub.id %}">{{ pub.theme }}</a>
-                            <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}">[pdf]</a>
+                            <a class="recent__specs--pdf" href="{% url 'base:pdf' pub.id %}" target="_blank">[pdf]</a>
                         </div>
+                        
+                        {% if pub.topic %}
+                        <div class="recent__meta">
+                            <a class="recent__topic" href="">{{ pub.topic.name }}</a>
+                        </div>
+                        {% endif %}
+                        
                         <div class="recent__authors">
                             {% for author in pub.authors.all %}
                                 <a class="recent__authors--author" href="{% url 'base:user-profile' author.id %}">@{{ author.username }}</a>
                             {% endfor %}
                         </div>
+                        
                         <p class="recent__description">{{ pub.description }}</p>
-                        <small>Published {{ pub.created|timesince }} ago</small>
+                        
+                        {% if pub.tags.exists %}
+                        <div class="recent__tags">
+                            {% for tag in pub.tags.all %}
+                                <a class="recent__tag" href="">#{{ tag.name }}</a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="recent__footer">
+                            <small>Published {{ pub.created|timesince }} ago</small>
+                            {% if pub.page_count %}
+                            <small class="recent__pages">{{ pub.page_count }} pages</small>
+                            {% endif %}
+                        </div>
                     </div>
 
                     {% endfor %}
@@ -171,7 +204,7 @@ JavaScript Dependencies:
                 <p>Tags: 
                     {% for tag in pub.tags.all %}
                         {% cycle 'color1' 'color2' 'color3' 'color4' 'color5' 'color6' as tag_colors silent %}
-                        <a href="" class="tag-box {{ tag_colors }}">{{ tag.name }}</a>
+                        <a href="{% url 'base:tag' tag.id %}" class="tag-box {{ tag_colors }}">{{ tag.name }}</a>
                     {% endfor %}
                 </p>
             </div>
@@ -274,7 +307,7 @@ JavaScript Dependencies:
                 &times;
             </button>
         </div>
-        <form action="{% url 'base:add-to-collection' pub.id %}" class="modal__form" method="POST" id="add-collection-form">
+        <form action="{% url 'base:add-to-collection' pub.id %}" class="modal__form" method="POST" id="add-collection-form" autocomplete="off">
             {% csrf_token %}
             <div class="form__group">
                 <label for="user_collection">Collection name</label>
@@ -304,7 +337,7 @@ JavaScript Dependencies:
                 &times;
             </button>
         </div>
-        <form action="{% url 'base:create-discussion' pub.id %}" class="modal__discussion--modal__form" method="POST" id="new-discussion-form">
+        <form action="{% url 'base:create-discussion' pub.id %}" class="modal__discussion--modal__form" method="POST" id="new-discussion-form" autocomplete="off">
             {% csrf_token %}
             <div class="form__group">
                 <label for="title">Discussion room name</label>

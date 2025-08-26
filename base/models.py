@@ -8,6 +8,7 @@ from . import utils
 from PyPDF2 import PdfReader
 
 
+
 class Topic(models.Model):
     name = models.CharField(max_length=100)
 
@@ -267,3 +268,267 @@ class Message(models.Model):
     def get_replies(self):
         """Get all replies to this message"""
         return self.replies.all().order_by('created')
+    
+
+class SearchHistory(models.Model):
+    """
+    Store user search history for better UX.
+    Only stores successful searches (when user clicks on a result).
+    """
+    user = models.ForeignKey(
+        get_user_model(), 
+        on_delete=models.CASCADE,
+        related_name='search_history'
+    )
+    query = models.CharField(max_length=200)
+    
+    # Store what they clicked on using generic foreign key
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    clicked_object = GenericForeignKey('content_type', 'object_id')
+    
+    # Track search context
+    search_type = models.CharField(
+        max_length=50, 
+        choices=[
+            ('general', 'General Search'),
+            ('publication', 'Publication Search'),
+            ('author', 'Author Search'),
+            ('collection', 'Collection Search'),
+            ('profile', 'Profile Search'),
+            ('discussion', 'Discussion Search'),
+            ('tag', 'Tag Search'),
+        ],
+        default='general'
+    )
+    
+    # Timestamps
+    searched_at = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(auto_now=True)  # Updated when query is reused
+    
+    # Usage tracking
+    usage_count = models.PositiveIntegerField(default=1)
+    
+    class Meta:
+        ordering = ['-last_used']
+        #unique_together = ('user', 'query', 'search_type', 'content_type', 'object_id')  # Prevent duplicates
+        indexes = [
+            models.Index(fields=['user', '-last_used']),
+            #models.Index(fields=['user', 'query']),
+        ]
+        verbose_name_plural = "Search histories"
+    
+    def __str__(self):
+        return f"{self.user.username}: '{self.query}'"
+    
+    @classmethod
+    def add_search(cls, user, query, search_type='general', clicked_object=None):
+        """
+        Add or update search history entry.
+        """
+        if not user.is_authenticated or not query.strip():
+            return None
+            
+        query = query.strip().lower()
+        
+        # Get content type for the clicked object
+        content_type = None
+        object_id = None
+        if clicked_object:
+            content_type = ContentType.objects.get_for_model(clicked_object)
+            object_id = clicked_object.id
+        
+        # Get or create the search entry
+        search_entry, created = cls.objects.update_or_create(
+            user=user,
+            query=query,
+            search_type=search_type,
+            content_type=content_type,
+            object_id=object_id,
+            defaults={
+                'last_used': timezone.now()
+            }
+        )
+        
+        if not created:
+            # Update existing entry
+            search_entry.usage_count += 1
+            search_entry.last_used = timezone.now()
+            if clicked_object:
+                search_entry.content_type = content_type
+                search_entry.object_id = object_id
+            search_entry.save(update_fields=['usage_count', 'last_used', 'content_type', 'object_id'])
+        
+        # Keep only last 20 searches per user
+        cls.cleanup_old_searches(user)
+        
+        return search_entry
+    
+    @classmethod
+    def get_recent_searches(cls, user, limit=20):
+        """
+        Get user's recent searches.
+        """
+        if not user.is_authenticated:
+            return cls.objects.none()
+            
+        return cls.objects.filter(user=user).order_by('-last_used')[:limit]
+    
+    @classmethod
+    def cleanup_old_searches(cls, user, keep_count=20):
+        """
+        Keep only the most recent searches for a user.
+        """
+        if not user.is_authenticated:
+            return
+            
+        # Get IDs of searches to keep
+        keep_ids = list(
+            cls.objects.filter(user=user)
+            .order_by('-last_used')
+            .values_list('id', flat=True)[:keep_count]
+        )
+        
+        # Delete the rest
+        cls.objects.filter(user=user).exclude(id__in=keep_ids).delete()
+    
+    @classmethod
+    def get_popular_searches(cls, user, limit=10):
+        """
+        Get user's most frequently used searches.
+        """
+        if not user.is_authenticated:
+            return cls.objects.none()
+            
+        return cls.objects.filter(user=user).order_by('-usage_count', '-last_used')[:limit]
+
+
+class SearchSuggestion(models.Model):
+    """
+    Store popular search terms for autocomplete suggestions.
+    This is system-wide, not user-specific.
+    """
+    query = models.CharField(max_length=200, unique=True)
+    search_count = models.PositiveIntegerField(default=1)
+    last_searched = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        ordering = ['-search_count', '-last_searched']
+        indexes = [
+            models.Index(fields=['query']),
+            models.Index(fields=['-search_count']),
+        ]
+    
+    def __str__(self):
+        return f"'{self.query}' ({self.search_count} searches)"
+    
+    @classmethod
+    def increment_search(cls, query):
+        """
+        Increment search count for a query.
+        """
+        if not query.strip():
+            return None
+            
+        query = query.strip().lower()
+        suggestion, created = cls.objects.get_or_create(
+            query=query,
+            defaults={'search_count': 1}
+        )
+        
+        if not created:
+            suggestion.search_count += 1
+            suggestion.save(update_fields=['search_count', 'last_searched'])
+        
+        return suggestion
+    
+    @classmethod
+    def get_suggestions(cls, query_prefix, limit=10):
+        """
+        Get search suggestions based on query prefix.
+        """
+        return cls.objects.filter(
+            query__istartswith=query_prefix,
+            is_active=True
+        ).order_by('-search_count')[:limit]
+
+
+
+
+
+##############################################################################################
+################################## Utility functions #########################################
+############################## We need to find a way to better manage this ###################
+##############################################################################################
+
+
+
+def track_search_click(request, clicked_object):
+    """
+    Tracks when a user clicks on a search result.
+    We call this on the clicked object view
+    """
+    # Check if this came from a search
+
+    if request.GET.get('from') == 'search':
+        query = request.GET.get('q')
+        search_tab = request.GET.get('tab', 'all')
+        
+        if query and request.user.is_authenticated:
+            # Map tab to search_type
+            search_type_map = {
+                'all': 'general',
+                'publications': 'publication',
+                'authors': 'author',
+                'profiles': 'profile',
+                'collections': 'collection',
+                'discussions': 'discussion',
+                'tags': 'tag'
+            }
+            
+            search_type = search_type_map.get(search_tab, 'general')
+            
+            SearchHistory.add_search(
+                user=request.user,
+                query=query,
+                search_type=search_type,
+                clicked_object=clicked_object
+            )
+            
+            return True
+    return False
+
+
+def get_search_context_from_request(request):
+    """
+    Extract search context from request parameters.
+    """
+    return {
+        'from_search': request.GET.get('from') == 'search',
+        'search_query': request.GET.get('q', ''),
+        'search_tab': request.GET.get('tab', 'all')
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##############################################################################################
+
+
+
+
+
+
+
+

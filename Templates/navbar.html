@@ -8,7 +8,8 @@
     </div>
     
     <div class="header__search">
-        <form action="{% url 'base:home' %}" method="GET" class="header__search--form">
+
+        <form action="{% url 'base:search' %}" method="GET" class="header__search--form" autocomplete="off">
             <div class="header__search--form__svg">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                     <title>search</title>
@@ -18,8 +19,183 @@
                 </svg>
             </div>
             <input class="header__search--form__input" type="text" name="q" placeholder="Search for papers...."/>
+            <!-- Search History & Suggestions Dropdown -->
+            <div class="search-dropdown" id="search-dropdown" style="display: none;">
+                <div class="search-dropdown-content">
+                    <!-- Recent History Section -->
+                    {% if recent_searches %}
+
+                    <div class="search-section" id="recent-section">
+                        <div class="search-section-header">
+                            <span class="search-section-title">Recent searches</span>
+                            <button type="button" class="clear-history-btn" id="clear-all-history">
+                                Clear all
+                            </button>
+                        </div>
+                        <div class="search-items" id="recent-items">
+                            {% for recent_search in recent_searches %}
+                            {% if recent_search.content_type.model == "publication" %}
+                                <div class="search-item publication-item">
+                                    <div class="publication-item__header">
+                                        <a class="publication-item__title" href="{% url 'base:publication' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ recent_search.clicked_object.theme }}</a>
+                                        <a class="publication-item__pdf" href="{% url 'base:pdf' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" target="_blank">PDF</a>
+                                    </div>
+                                    <div class="publication-item__authors">
+                                        {% for author in recent_search.clicked_object.authors.all %}
+                                            <a class="author-link" href="{% url 'base:user-profile' author.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ author.username }}</a>{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% if recent_search.clicked_object.description %}
+                                    <p class="publication-item__description">{{ recent_search.clicked_object.description|truncatewords:20 }}</p>
+                                    {% endif %}
+                                    <div class="publication-item__meta">
+                                        {% if recent_search.clicked_object.topic %}
+                                        <span class="meta-item">{{ recent_search.clicked_object.topic.name }}</span>
+                                        {% endif %}
+                                        <span class="meta-item">{{ recent_search.clicked_object.created|timesince }} ago</span>
+                                        {% if recent_search.clicked_object.page_count %}
+                                        <span class="meta-item">{{ recent_search.clicked_object.page_count }} pages</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% elif recent_search.content_type.model == "user" %}
+                                <div class="search-item author-item">
+                                    <div class="author-item__profile">
+                                        <div class="author-item__avatar">
+                                            {% if recent_search.clicked_object.photo %}
+                                            <img src="{{ recent_search.clicked_object.photo.url }}" alt="{{ recent_search.clicked_object.username }}" />
+                                            {% else %}
+                                            <div class="avatar-placeholder">{{ recent_search.clicked_object.username|first|upper }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="author-item__info">
+                                            <a href="{% url 'base:user-profile' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="author-item__name">{{ recent_search.clicked_object.username }}</a>
+                                            {% if recent_search.clicked_object.first_name or recent_search.clicked_object.last_name %}
+                                            <p class="author-item__fullname">{{ recent_search.clicked_object.first_name }} {{ recent_search.clicked_object.last_name }}</p>
+                                            {% endif %}
+                                            {% if recent_search.clicked_object.school %}
+                                            <p class="author-item__school">{{ recent_search.clicked_object.school }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="author-item__stats">
+                                        <span class="stat-item">{{ recent_search.clicked_object.pub_authored.count }} publications</span>
+                                    </div>
+                                </div>
+                            {% elif recent_search.content_type.model == "collection" %}
+
+                                <div class="search-item collection-item">
+                                    <div class="collection-item__header">
+                                        <a href="{% url 'base:collection' recent_search.clicked_object.user.id recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="collection-item__name">
+                                            {{ recent_search.clicked_object.name }}
+                                        </a>
+                                        {% if request.user.id == recent_search.clicked_object.user.id %}
+                                        <!-- <button class="collection-item__delete" data-collection-id="{{ recent_search.clicked_object.id }}">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button> -->
+                                        {% endif %}
+                                    </div>
+                                    <div class="collection-item__info">
+                                        <span class="collection-item__count">{{ recent_search.clicked_object.publications.count }} publications</span>
+                                        <span class="collection-item__owner">by {{ recent_search.clicked_object.user.username }}</span>
+                                    </div>
+                                    <div class="collection-item__meta">
+                                        <span class="meta-item">Created {{ recent_search.clicked_object.created|timesince }} ago</span>
+                                    </div>
+                                </div>
+
+                            {% elif recent_search.content_type.model == "discussion" %}
+                                <div class="search-item discussion-item">
+                                    <div class="discussion-item__header">
+                                        <a href="{% url 'base:discussion' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="discussion-item__title">
+                                            {{ recent_search.clicked_object.title }}
+                                        </a>
+                                    </div>
+                                    {% if recent_search.clicked_object.description %}
+                                    <p class="discussion-item__description">{{ recent_search.clicked_object.description|truncatewords:15 }}</p>
+                                    {% endif %}
+                                    <div class="discussion-item__info">
+                                        <span class="discussion-item__creator">
+                                            Started by <a href="{% url 'base:user-profile' recent_search.clicked_object.creator.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="user-link">{{ discussion.creator.username }}</a>
+                                            {% if recent_search.clicked_object.creator in recent_search.clicked_object.publication.authors.all %}
+                                            <span class="creator-badge">author</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="discussion-item__meta">
+                                        <span class="meta-item">About: <a href="{% url 'base:publication' recent_search.clicked_object.publication.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="publication-link">{{ discussion.publication.theme|truncatewords:5 }}</a></span>
+                                        <span class="meta-item">{{ recent_search.clicked_object.participants.count }} participants</span>
+                                        <span class="meta-item">{{ recent_search.clicked_object.updated|timesince }} ago</span>
+                                    </div>
+                                </div>
+
+                            {% elif recent_search.content_type.model == "user" %}
+
+                                <div class="search-item profile-item">
+                                    <div class="profile-item__main">
+                                        <div class="profile-item__avatar">
+                                            {% if recent_search.content_type.photo %}
+                                            <img src="{{ recent_search.content_type.photo.url }}" alt="{{ recent_search.content_type.username }}" />
+                                            {% else %}
+                                            <div class="avatar-placeholder">{{ recent_search.content_type.username|first|upper }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="profile-item__info">
+                                            <a href="{% url 'base:user-profile' recent_search.content_type.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="profile-item__username">{{ profile.username }}</a>
+                                            {% if recent_search.content_type.first_name or recent_search.content_type.last_name %}
+                                            <p class="profile-item__fullname">{{ recent_search.content_type.first_name }} {{ recent_search.content_type.last_name }}</p>
+                                            {% endif %}
+                                            {% if recent_search.content_type.school %}
+                                            <p class="profile-item__school">{{ recent_search.content_type.school }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="profile-item__stats">
+                                        {% if recent_search.content_type.pub_authored.count > 0 %}
+                                        <span class="stat-item">{{ recent_search.content_type.pub_authored.count }} publications</span>
+                                        {% endif %}
+                                        <span class="stat-item">Joined {{ recent_search.content_type.date_joined|timesince }} ago</span>
+                                    </div>
+                                </div>
+                            
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Popular Suggestions Section -->
+                    <!-- <div class="search-section" id="suggestions-section">
+                        <div class="search-section-header">
+                            <span class="search-section-title">Popular searches</span>
+                        </div>
+                        <div class="search-items" id="suggestion-items">
+                            
+                        </div>
+                    </div> -->
+                    <!-- For a future version with settings in it -->
+
+                    {% else %}
+                    
+                    
+                    <!-- No results -->
+                    <div class="search-no-results" id="no-results">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <span>No recent search</span>
+                    </div>
+
+                    {% endif %}
+                </div>
+            </div>
         </form>
+
     </div>
+
+    
 
     <div class="header__profile">
 
@@ -39,12 +215,12 @@
                         {% endif %}
                     </div>
                 </a>
-                <div class="header__profile--user__profile">
+                <a href="{% url 'base:user-profile' request.user.id %}" class="header__profile--user__profile">
                     <div class="header__profile--user__profile--avatar avatar--medium active">
                         <img src="{{ request.user.photo.url }}"/>
                     </div>
                     <small>@{{ request.user.username }}</small>
-                </div>
+                </a>
                 <div class="dropdown-button">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                     <title>chevron-down</title>
@@ -64,7 +240,7 @@
         {% endif %}
 
         <div class="dropdown-menu">
-            <a href="{% url 'base:user-profile' request.user.id%}" class="dropdown-link">
+            <a href="{% url 'base:user-profile' request.user.id %}" class="dropdown-link">
                 <div>
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                     <title>tools</title>
@@ -91,4 +267,6 @@
         
     </div>
 </header>
+
+
 
