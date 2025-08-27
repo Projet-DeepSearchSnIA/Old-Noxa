@@ -1,0 +1,272 @@
+{% load static %}
+<!-- Navbar -->
+<header class="header">
+    <div class="header__logo">
+        <a href="{% url 'base:home' %}">
+            <img src="{% static 'images/noxa_logo.svg' %}" alt="Logo Noxa" class="logo" />
+        </a>
+    </div>
+    
+    <div class="header__search">
+
+        <form action="{% url 'base:search' %}" method="GET" class="header__search--form" autocomplete="off">
+            <div class="header__search--form__svg">
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                    <title>search</title>
+                    <path
+                    d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z"
+                    ></path>
+                </svg>
+            </div>
+            <input class="header__search--form__input" type="text" name="q" placeholder="Search for papers...."/>
+            <!-- Search History & Suggestions Dropdown -->
+            <div class="search-dropdown" id="search-dropdown" style="display: none;">
+                <div class="search-dropdown-content">
+                    <!-- Recent History Section -->
+                    {% if recent_searches %}
+
+                    <div class="search-section" id="recent-section">
+                        <div class="search-section-header">
+                            <span class="search-section-title">Recent searches</span>
+                            <button type="button" class="clear-history-btn" id="clear-all-history">
+                                Clear all
+                            </button>
+                        </div>
+                        <div class="search-items" id="recent-items">
+                            {% for recent_search in recent_searches %}
+                            {% if recent_search.content_type.model == "publication" %}
+                                <div class="search-item publication-item">
+                                    <div class="publication-item__header">
+                                        <a class="publication-item__title" href="{% url 'base:publication' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ recent_search.clicked_object.theme }}</a>
+                                        <a class="publication-item__pdf" href="{% url 'base:pdf' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" target="_blank">PDF</a>
+                                    </div>
+                                    <div class="publication-item__authors">
+                                        {% for author in recent_search.clicked_object.authors.all %}
+                                            <a class="author-link" href="{% url 'base:user-profile' author.id %}?from=search&q={{ q }}&tab={{ active_tab }}">{{ author.username }}</a>{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% if recent_search.clicked_object.description %}
+                                    <p class="publication-item__description">{{ recent_search.clicked_object.description|truncatewords:20 }}</p>
+                                    {% endif %}
+                                    <div class="publication-item__meta">
+                                        {% if recent_search.clicked_object.topic %}
+                                        <span class="meta-item">{{ recent_search.clicked_object.topic.name }}</span>
+                                        {% endif %}
+                                        <span class="meta-item">{{ recent_search.clicked_object.created|timesince }} ago</span>
+                                        {% if recent_search.clicked_object.page_count %}
+                                        <span class="meta-item">{{ recent_search.clicked_object.page_count }} pages</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% elif recent_search.content_type.model == "user" %}
+                                <div class="search-item author-item">
+                                    <div class="author-item__profile">
+                                        <div class="author-item__avatar">
+                                            {% if recent_search.clicked_object.photo %}
+                                            <img src="{{ recent_search.clicked_object.photo.url }}" alt="{{ recent_search.clicked_object.username }}" />
+                                            {% else %}
+                                            <div class="avatar-placeholder">{{ recent_search.clicked_object.username|first|upper }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="author-item__info">
+                                            <a href="{% url 'base:user-profile' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="author-item__name">{{ recent_search.clicked_object.username }}</a>
+                                            {% if recent_search.clicked_object.first_name or recent_search.clicked_object.last_name %}
+                                            <p class="author-item__fullname">{{ recent_search.clicked_object.first_name }} {{ recent_search.clicked_object.last_name }}</p>
+                                            {% endif %}
+                                            {% if recent_search.clicked_object.school %}
+                                            <p class="author-item__school">{{ recent_search.clicked_object.school }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="author-item__stats">
+                                        <span class="stat-item">{{ recent_search.clicked_object.pub_authored.count }} publications</span>
+                                    </div>
+                                </div>
+                            {% elif recent_search.content_type.model == "collection" %}
+
+                                <div class="search-item collection-item">
+                                    <div class="collection-item__header">
+                                        <a href="{% url 'base:collection' recent_search.clicked_object.user.id recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="collection-item__name">
+                                            {{ recent_search.clicked_object.name }}
+                                        </a>
+                                        {% if request.user.id == recent_search.clicked_object.user.id %}
+                                        <!-- <button class="collection-item__delete" data-collection-id="{{ recent_search.clicked_object.id }}">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button> -->
+                                        {% endif %}
+                                    </div>
+                                    <div class="collection-item__info">
+                                        <span class="collection-item__count">{{ recent_search.clicked_object.publications.count }} publications</span>
+                                        <span class="collection-item__owner">by {{ recent_search.clicked_object.user.username }}</span>
+                                    </div>
+                                    <div class="collection-item__meta">
+                                        <span class="meta-item">Created {{ recent_search.clicked_object.created|timesince }} ago</span>
+                                    </div>
+                                </div>
+
+                            {% elif recent_search.content_type.model == "discussion" %}
+                                <div class="search-item discussion-item">
+                                    <div class="discussion-item__header">
+                                        <a href="{% url 'base:discussion' recent_search.clicked_object.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="discussion-item__title">
+                                            {{ recent_search.clicked_object.title }}
+                                        </a>
+                                    </div>
+                                    {% if recent_search.clicked_object.description %}
+                                    <p class="discussion-item__description">{{ recent_search.clicked_object.description|truncatewords:15 }}</p>
+                                    {% endif %}
+                                    <div class="discussion-item__info">
+                                        <span class="discussion-item__creator">
+                                            Started by <a href="{% url 'base:user-profile' recent_search.clicked_object.creator.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="user-link">{{ discussion.creator.username }}</a>
+                                            {% if recent_search.clicked_object.creator in recent_search.clicked_object.publication.authors.all %}
+                                            <span class="creator-badge">author</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="discussion-item__meta">
+                                        <span class="meta-item">About: <a href="{% url 'base:publication' recent_search.clicked_object.publication.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="publication-link">{{ discussion.publication.theme|truncatewords:5 }}</a></span>
+                                        <span class="meta-item">{{ recent_search.clicked_object.participants.count }} participants</span>
+                                        <span class="meta-item">{{ recent_search.clicked_object.updated|timesince }} ago</span>
+                                    </div>
+                                </div>
+
+                            {% elif recent_search.content_type.model == "user" %}
+
+                                <div class="search-item profile-item">
+                                    <div class="profile-item__main">
+                                        <div class="profile-item__avatar">
+                                            {% if recent_search.content_type.photo %}
+                                            <img src="{{ recent_search.content_type.photo.url }}" alt="{{ recent_search.content_type.username }}" />
+                                            {% else %}
+                                            <div class="avatar-placeholder">{{ recent_search.content_type.username|first|upper }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="profile-item__info">
+                                            <a href="{% url 'base:user-profile' recent_search.content_type.id %}?from=search&q={{ q }}&tab={{ active_tab }}" class="profile-item__username">{{ profile.username }}</a>
+                                            {% if recent_search.content_type.first_name or recent_search.content_type.last_name %}
+                                            <p class="profile-item__fullname">{{ recent_search.content_type.first_name }} {{ recent_search.content_type.last_name }}</p>
+                                            {% endif %}
+                                            {% if recent_search.content_type.school %}
+                                            <p class="profile-item__school">{{ recent_search.content_type.school }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="profile-item__stats">
+                                        {% if recent_search.content_type.pub_authored.count > 0 %}
+                                        <span class="stat-item">{{ recent_search.content_type.pub_authored.count }} publications</span>
+                                        {% endif %}
+                                        <span class="stat-item">Joined {{ recent_search.content_type.date_joined|timesince }} ago</span>
+                                    </div>
+                                </div>
+                            
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Popular Suggestions Section -->
+                    <!-- <div class="search-section" id="suggestions-section">
+                        <div class="search-section-header">
+                            <span class="search-section-title">Popular searches</span>
+                        </div>
+                        <div class="search-items" id="suggestion-items">
+                            
+                        </div>
+                    </div> -->
+                    <!-- For a future version with settings in it -->
+
+                    {% else %}
+                    
+                    
+                    <!-- No results -->
+                    <div class="search-no-results" id="no-results">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <span>No recent search</span>
+                    </div>
+
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    
+
+    <div class="header__profile">
+
+        {% if request.user.is_authenticated %}
+
+            <a class="profile__container--main__pubs--pubs__publish" href="{% url 'base:create-publication' %}">Publish</a>
+
+            <!-- Logged In -->
+            <div class="header__profile--user">
+                <a href="{% url 'base:notifications' %}" class="header__profile--user__notify" title="Notifications">
+                    <div class="notification-bell-container">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="24px" height="24px" fill="currentColor">
+                            <path d="M 25 0 C 22.800781 0 21 1.800781 21 4 C 21 4.515625 21.101563 5.015625 21.28125 5.46875 C 15.65625 6.929688 12 11.816406 12 18 C 12 25.832031 10.078125 29.398438 8.25 31.40625 C 7.335938 32.410156 6.433594 33.019531 5.65625 33.59375 C 5.265625 33.878906 4.910156 34.164063 4.59375 34.53125 C 4.277344 34.898438 4 35.421875 4 36 C 4 37.375 4.84375 38.542969 6.03125 39.3125 C 7.21875 40.082031 8.777344 40.578125 10.65625 40.96875 C 13.09375 41.472656 16.101563 41.738281 19.40625 41.875 C 19.15625 42.539063 19 43.253906 19 44 C 19 47.300781 21.699219 50 25 50 C 28.300781 50 31 47.300781 31 44 C 31 43.25 30.847656 42.535156 30.59375 41.875 C 33.898438 41.738281 36.90625 41.472656 39.34375 40.96875 C 41.222656 40.578125 42.78125 40.082031 43.96875 39.3125 C 45.15625 38.542969 46 37.375 46 36 C 46 35.421875 45.722656 34.898438 45.40625 34.53125 C 45.089844 34.164063 44.734375 33.878906 44.34375 33.59375 C 43.566406 33.019531 42.664063 32.410156 41.75 31.40625 C 39.921875 29.398438 38 25.832031 38 18 C 38 11.820313 34.335938 6.9375 28.71875 5.46875 C 28.898438 5.015625 29 4.515625 29 4 C 29 1.800781 27.199219 0 25 0 Z M 25 2 C 26.117188 2 27 2.882813 27 4 C 27 5.117188 26.117188 6 25 6 C 23.882813 6 23 5.117188 23 4 C 23 2.882813 23.882813 2 25 2 Z M 27.34375 7.1875 C 32.675781 8.136719 36 12.257813 36 18 C 36 26.167969 38.078125 30.363281 40.25 32.75 C 41.335938 33.941406 42.433594 34.6875 43.15625 35.21875 C 43.515625 35.484375 43.785156 35.707031 43.90625 35.84375 C 44.027344 35.980469 44 35.96875 44 36 C 44 36.625 43.710938 37.082031 42.875 37.625 C 42.039063 38.167969 40.679688 38.671875 38.9375 39.03125 C 35.453125 39.753906 30.492188 40 25 40 C 19.507813 40 14.546875 39.753906 11.0625 39.03125 C 9.320313 38.671875 7.960938 38.167969 7.125 37.625 C 6.289063 37.082031 6 36.625 6 36 C 6 35.96875 5.972656 35.980469 6.09375 35.84375 C 6.214844 35.707031 6.484375 35.484375 6.84375 35.21875 C 7.566406 34.6875 8.664063 33.941406 9.75 32.75 C 11.921875 30.363281 14 26.167969 14 18 C 14 12.261719 17.328125 8.171875 22.65625 7.21875 C 23.320313 7.707031 24.121094 8 25 8 C 25.886719 8 26.679688 7.683594 27.34375 7.1875 Z M 21.5625 41.9375 C 22.683594 41.960938 23.824219 42 25 42 C 26.175781 42 27.316406 41.960938 28.4375 41.9375 C 28.792969 42.539063 29 43.25 29 44 C 29 46.222656 27.222656 48 25 48 C 22.777344 48 21 46.222656 21 44 C 21 43.242188 21.199219 42.539063 21.5625 41.9375 Z"/>
+                        </svg>
+                        {% if unread_notifications_count > 0 %}
+                            <span class="notification-badge">{{ unread_notifications_count }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+                <a href="{% url 'base:user-profile' request.user.id %}" class="header__profile--user__profile">
+                    <div class="header__profile--user__profile--avatar avatar--medium active">
+                        <img src="{{ request.user.photo.url }}"/>
+                    </div>
+                    <small>@{{ request.user.username }}</small>
+                </a>
+                <div class="dropdown-button">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                    <title>chevron-down</title>
+                    <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
+                    </svg>
+                </div>
+            </div>
+
+        {% else %}
+
+            <!-- Not Logged In -->
+            <a href="{% url 'authentification:login' %}">
+                <img src="{% static 'images/avatar.svg' %}" />
+                <p>Login</p>
+            </a>
+            
+        {% endif %}
+
+        <div class="dropdown-menu">
+            <a href="{% url 'base:user-profile' request.user.id %}" class="dropdown-link">
+                <div>
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                    <title>tools</title>
+                    <path
+                        d="M27.465 32c-1.211 0-2.35-0.471-3.207-1.328l-9.392-9.391c-2.369 0.898-4.898 0.951-7.355 0.15-3.274-1.074-5.869-3.67-6.943-6.942-0.879-2.682-0.734-5.45 0.419-8.004 0.135-0.299 0.408-0.512 0.731-0.572 0.32-0.051 0.654 0.045 0.887 0.277l5.394 5.395 3.586-3.586-5.394-5.395c-0.232-0.232-0.336-0.564-0.276-0.887s0.272-0.596 0.572-0.732c2.552-1.152 5.318-1.295 8.001-0.418 3.274 1.074 5.869 3.67 6.943 6.942 0.806 2.457 0.752 4.987-0.15 7.358l9.392 9.391c0.844 0.842 1.328 2.012 1.328 3.207-0 2.5-2.034 4.535-4.535 4.535zM15.101 19.102c0.26 0 0.516 0.102 0.707 0.293l9.864 9.863c0.479 0.479 1.116 0.742 1.793 0.742 1.398 0 2.535-1.137 2.535-2.535 0-0.668-0.27-1.322-0.742-1.793l-9.864-9.863c-0.294-0.295-0.376-0.74-0.204-1.119 0.943-2.090 1.061-4.357 0.341-6.555-0.863-2.631-3.034-4.801-5.665-5.666-1.713-0.561-3.468-0.609-5.145-0.164l4.986 4.988c0.391 0.391 0.391 1.023 0 1.414l-5 5c-0.188 0.188-0.441 0.293-0.707 0.293s-0.52-0.105-0.707-0.293l-4.987-4.988c-0.45 1.682-0.397 3.436 0.164 5.146 0.863 2.631 3.034 4.801 5.665 5.666 2.2 0.721 4.466 0.604 6.555-0.342 0.132-0.059 0.271-0.088 0.411-0.088z"
+                    ></path>
+                    </svg>
+                </div>
+                <p>Settings</p>
+            </a>
+            <a href="{% url 'authentification:logout' %}" class="dropdown-link"
+                ><svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                <title>sign-out</title>
+                <path
+                    d="M3 0h22c0.553 0 1 0 1 0.553l-0 3.447h-2v-2h-20v28h20v-2h2l0 3.447c0 0.553-0.447 0.553-1 0.553h-22c-0.553 0-1-0.447-1-1v-30c0-0.553 0.447-1 1-1z"
+                ></path>
+                <path
+                    d="M21.879 21.293l1.414 1.414 6.707-6.707-6.707-6.707-1.414 1.414 4.293 4.293h-14.172v2h14.172l-4.293 4.293z"
+                ></path>
+                </svg>
+                Logout
+            </a>
+        </div>
+        
+    </div>
+</header>
+
+
+
