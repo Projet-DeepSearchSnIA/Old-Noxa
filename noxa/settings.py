@@ -38,8 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'noxa',
-    'authentification',
+    #'noxa',
+    'base.apps.BaseConfig',
+    'authentification.apps.AuthentificationConfig',
 ]
 
 MIDDLEWARE = [
@@ -58,8 +59,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            'Templates',
-            'authentification/Templates',
+            BASE_DIR / 'templates'
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -68,6 +68,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'base.context_processors.notifications_context',
+                'base.context_processors.recentSearches',
             ],
         },
     },
@@ -132,7 +134,7 @@ AUTH_USER_MODEL = 'authentification.User'
 
 # Login URL
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/home/'  # Redirect to home after login
+LOGIN_REDIRECT_URL = '/'  # Redirect to home after login
 LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login after logout
 
 # Media files
