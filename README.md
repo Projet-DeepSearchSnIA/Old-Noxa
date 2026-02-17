@@ -1,5 +1,10 @@
+# 📜 OLD - Version NOXA
 
-# NOXA
+⚠️ Cette version de **NOXA** est ancienne et n’est plus maintenue.  
+👉 Merci de vous référer à la **nouvelle version de NOXA** pour les mises à jour et améliorations.
+
+---
+🔗 [Lien vers la nouvelle version de NOXA]([https://github.com/ton-org/noxa](https://github.com/Projet-DeepSearchSnIA/Noxa))
 
 [![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-4.2-green?logo=django&logoColor=white)](https://www.djangoproject.com/)
